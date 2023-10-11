@@ -83,25 +83,6 @@ def main() -> None:
     adverlos_nor = []
     
     # train_nodes, eval_nodes = get_graph_node_names(model)
-    # args.layers = {
-    #     'relu': 'relu',
-    #     'layer1.0.relu': 'layer1.0.relu',
-    #     'layer1.1.relu': 'layer1.1.relu',
-    #     'layer1.2.relu': 'layer1.2.relu',
-    #     'layer2.0.relu': 'layer2.0.relu',
-    #     'layer2.1.relu': 'layer2.1.relu',
-    #     'layer2.2.relu': 'layer2.2.relu',
-    #     'layer2.3.relu': 'layer2.3.relu',
-    #     'layer3.0.relu': 'layer3.0.relu',
-    #     'layer3.1.relu': 'layer3.1.relu',
-    #     'layer3.2.relu': 'layer3.2.relu',
-    #     'layer3.3.relu': 'layer3.3.relu',
-    #     'layer3.4.relu': 'layer3.4.relu',
-    #     'layer3.5.relu': 'layer3.5.relu',
-    #     'layer4.0.relu': 'layer4.0.relu',
-    #     'layer4.1.relu': 'layer4.1.relu',
-    #     'layer4.2.relu': 'layer4.2.relu',
-    #     }
     fe = create_feature_extractor(model, return_nodes=args.layers)
 
     for nor, adv in data_loader:

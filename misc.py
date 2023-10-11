@@ -108,3 +108,16 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
+
+
+    
+def get_preprocessing(args):
+
+    if args.dataset == 'cifar10':
+        preprocessing = dict(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010], axis=-3)
+    elif args.dataset == 'cifar100':
+        preprocessing = dict(mean=[0.5071, 0.4867, 0.4408], std=[0.2675, 0.2565, 0.2761], axis=-3)
+    elif args.dataset == 'imagenet':
+        preprocessing = dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], axis=-3)
+
+    return preprocessing

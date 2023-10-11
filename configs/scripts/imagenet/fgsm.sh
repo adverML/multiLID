@@ -19,6 +19,8 @@ python extract.py --load_json imagenet/wrn50-2/lid/k30/fgsm_8255.json
 python extract.py --load_json imagenet/wrn50-2/lid/k30/fgsm_16255.json
 python extract.py --load_json imagenet/wrn50-2/lid/k30/fgsm_32255.json
 
+python detect.py --load_json imagenet/wrn50-2/multilid/k30/rf_fgsm_8255.json
+
 
 python detect.py --load_json imagenet/wrn50-2/multilid/k30/rf_fgsm_0.001.json
 python detect.py --load_json imagenet/wrn50-2/multilid/k30/rf_fgsm_0.01.json

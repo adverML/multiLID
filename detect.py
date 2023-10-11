@@ -22,6 +22,8 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score
 from sklearn.preprocessing import scale, MinMaxScaler, StandardScaler
 import argparse
 
+import cfg
+
 from misc import (
     args_handling,
     print_args,
