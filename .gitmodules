@@ -1,0 +1,4 @@
+[submodule "submodules/autoattack"]
+	path = submodules/autoattack
+	url = https://github.com/adverML/auto-attack.git
+	branch = forspectraldefense

@@ -1,0 +1,1 @@
+python gen.py --load_json imagenet/vgg16/fgsm/fgsm_8255.json

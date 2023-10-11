@@ -1,0 +1,12 @@
+{
+    "run_nr": "run_1",
+    "att": "fgsm",
+    "dataset": "imagenet",
+    "model": "wrn50-2",
+    "save_nor": "normalos_0.01.pt",
+    "save_adv": "adverlos_0.01.pt",
+    "eps": "0.01",
+    "debug": false,
+    "load_json": "",
+    "save_json": ""
+}

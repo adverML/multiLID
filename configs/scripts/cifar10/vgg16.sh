@@ -1,0 +1,1 @@
+python gen.py --load_json cifar10/vgg16/fgsm_8255.json

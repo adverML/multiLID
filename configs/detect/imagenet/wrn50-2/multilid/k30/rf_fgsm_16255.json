@@ -1,0 +1,15 @@
+{
+    "run_nr": "run_1",
+    "att": "fgsm",
+    "defense": "multilid",
+    "dataset": "imagenet",
+    "model": "wrn50-2",
+    "load_nor": "multilid_normalos_16255.pt",
+    "load_adv": "multilid_adverlos_16255.pt",
+    "eps": "16/255",
+    "k": 30,
+    "nr_samples": 2000,
+    "clf": "rf",
+    "load_json": "",
+    "save_json": ""
+}

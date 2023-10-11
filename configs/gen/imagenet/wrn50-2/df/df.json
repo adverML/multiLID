@@ -1,0 +1,11 @@
+{
+    "run_nr": "run_1",
+    "att": "df",
+    "dataset": "imagenet",
+    "model": "wrn50-2",
+    "save_nor": "normalos.pt",
+    "save_adv": "adverlos.pt",
+    "eps": null,
+    "load_json": "",
+    "save_json": ""
+}

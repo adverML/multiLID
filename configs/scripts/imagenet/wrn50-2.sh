@@ -1,0 +1,1 @@
+python gen.py --load_json imagenet/wrn50-2/fgsm/fgsm_8255.json

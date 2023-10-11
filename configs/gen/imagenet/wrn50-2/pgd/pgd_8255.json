@@ -1,0 +1,11 @@
+{
+    "run_nr": "run_1",
+    "att": "pgd",
+    "dataset": "imagenet",
+    "model": "wrn50-2",
+    "save_nor": "normalos_8255.pt",
+    "save_adv": "adverlos_8255.pt",
+    "eps": "8/255",
+    "load_json": "",
+    "save_json": ""
+}
