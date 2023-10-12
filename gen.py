@@ -11,8 +11,6 @@ import foolbox.attacks as fa
 import foolbox as fb
 import numpy as np
 import torch
-from torchvision.models.feature_extraction import get_graph_node_names
-from torchvision.models.feature_extraction import create_feature_extractor
 
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
@@ -32,6 +30,8 @@ from misc import (
     str2bool,
     get_preprocessing
 )
+
+from models.utils import get_model
 
 DEEPFOOL = ['fgsm', 'bim', 'pgd', 'df', 'cw']
 AUTOATTACK = ['aa', 'apgd-ce']
@@ -75,47 +75,8 @@ def main() -> None:
     create_dir(base_pth)
     create_dir(base_log_pth)
 
-    if args.dataset == 'imagenet':
-        preprocessing = get_preprocessing(args)
-        if args.model == 'wrn50-2':
-            import torchvision.models as models
-            model = models.wide_resnet50_2(weights='DEFAULT')
-        elif args.model == 'vgg16':
-            import torchvision.models as models
-            model = models.vgg16(weights='DEFAULT')
 
-    elif args.dataset == 'cifar10':
-        preprocessing = get_preprocessing(args)
-        if args.model == 'wrn28-10':
-            from models.wide_residual_distr import WideResNet as WideResNet96
-            from models.wide_residual_distr import WideBasic as WideBasic96
-            model = WideResNet96(num_classes=10, block=WideBasic96, depth=28, widen_factor=10, dropout=0.3, preprocessing=[])
-            ckpt = torch.load('/home/lorenzp/wide-resnet.pytorch/checkpoint_wrn/cifar10/wide-resnet-28x10_2022-04-17_14:12:50.pt')
-            model.load_state_dict(ckpt['model_state_dict'],  strict=True)
-        elif args.model == 'vgg16':
-            from models.vgg_cif10 import VGG
-            from models.helper import create_new_state_dict
-            model = VGG('VGG16', preprocessing=[])
-            ckpt = torch.load('/home/lorenzp/adversialml/src/checkpoint/vgg16/vgg_cif10.pth')
-            new_state_dict = create_new_state_dict(ckpt)
-            model.load_state_dict(new_state_dict)
-
-    elif args.dataset == 'cifar100':
-        preprocessing = get_preprocessing(args)
-        if args.model == 'wrn28-10':
-            from models.wide_residual_distr import WideResNet as WideResNet96
-            from models.wide_residual_distr import WideBasic as WideBasic96
-            model = WideResNet96(num_classes=100, block=WideBasic96, depth=28, widen_factor=10, dropout=0.3, preprocessing=[])
-            ckpt = torch.load('/home/lorenzp/wide-resnet.pytorch/checkpoint_wrn/cifar100/wide-resnet-28x10_2022-04-17_14:13:21.pt')
-            model.load_state_dict(ckpt['model_state_dict'],  strict=True)
-        elif args.model == 'vgg16':
-            from models.vgg import vgg16_bn
-            from models.helper import create_new_state_dict
-            model = VGG('VGG16', preprocessing=[])
-            ckpt = torch.load('/home/lorenzp/adversialml/src/checkpoint/vgg16/vgg_cif100.pth')
-            new_state_dict = create_new_state_dict(ckpt)
-            model.load_state_dict(new_state_dict)
-
+    model, preprocessing = get_model(args)
     model = model.eval()
     fmodel = PyTorchModel(model, bounds=(0, 1), preprocessing=preprocessing)
 
@@ -164,9 +125,8 @@ def main() -> None:
         args.eps = None
     elif args.att in AUTOATTACK:
         from submodules.autoattack.autoattack import AutoAttack as AutoAttack_mod
-        adversary = AutoAttack_mod(fmodel, norm=args.norm, eps=args.eps, log_path=os.path.join(base_log_pth, args.load_json.split('/')[-1]), version=args.version)
+        adversary = AutoAttack_mod(fmodel, norm=args.norm.capitalize(), eps=args.eps, log_path=os.path.join(base_log_pth, args.load_json.split('/')[-1]), version=args.version)
         if args.version == 'individual':
-            breakpoint()
             adversary.attacks_to_run = [ args.att ]
 
     # report the success rate of the attack (percentage of samples that could
@@ -194,24 +154,25 @@ def main() -> None:
     normalos = []
     adverlos = []
     
-    with torch.no_grad():
-        for it, (img, lab) in tqdm(enumerate(data_loader), total=round((args.max_counter*2)/args.bs)):
     
-            img_cu, lab_cu, restore_type = pred(fmodel, img.cuda(non_blocking=True), lab.cuda(non_blocking=True))
+    for it, (img, lab) in tqdm(enumerate(data_loader), total=round((args.max_counter)/args.bs)):
 
-            clean_acc = accuracy(fmodel, img_cu, lab_cu) * 100
-            if args.debug:
-                print("clean_acc: ", clean_acc)
+        img_cu, lab_cu, restore_type = pred(fmodel, img.cuda(non_blocking=True), lab.cuda(non_blocking=True))
 
-            if args.att in DEEPFOOL:
-                lab_cu = fb.criteria.Misclassification(lab_cu)
-                xp_, x_, success = attack(fmodel, img_cu, lab_cu, epsilons=args.eps)
-                suc = success.float32().mean().item() * 100
-                
-                nor = restore_type(img_cu[torch.where(restore_type(success).int().cpu().squeeze() == 1)[0]]).cpu()
-                adv = restore_type(x_[torch.where(restore_type(success).int().cpu().squeeze() == 1)[0]]).cpu()
+        clean_acc = accuracy(fmodel, img_cu, lab_cu) * 100
+        if args.debug:
+            print("clean_acc: ", clean_acc)
 
-            elif args.att in AUTOATTACK:
+        if args.att in DEEPFOOL:
+            lab_cu = fb.criteria.Misclassification(lab_cu)
+            xp_, x_, success = attack(fmodel, img_cu, lab_cu, epsilons=args.eps)
+            suc = success.float32().mean().item() * 100
+            
+            nor = restore_type(img_cu[torch.where(restore_type(success).int().cpu().squeeze() == 1)[0]]).cpu()
+            adv = restore_type(x_[torch.where(restore_type(success).int().cpu().squeeze() == 1)[0]]).cpu()
+
+        elif args.att in AUTOATTACK:
+            with torch.no_grad():
                 img_cu = torch.squeeze(restore_type(img_cu))
                 lab_cu = torch.squeeze(restore_type(lab_cu))
 
@@ -220,7 +181,7 @@ def main() -> None:
                     lab_cu = torch.unsqueeze(lab_cu, 0)
 
                 if args.version == 'standard':
-                    x_, y_, max_nr, success = adversary.run_standard_evaluation(img_cu, lab_cu, bs=args.bs, return_labels=True)
+                    x_, y_, max_nr, success = adversary.run_standard_evaluation(img_cu, lab_cu, bs=args.bs, verbose=False, return_labels=True)
                 else: 
                     adv_complete = adversary.run_standard_evaluation_individual(img_cu, lab_cu, bs=args.bs, return_labels=True)
                     x_, y_, max_nr, success = adv_complete[ args.att ]
@@ -229,14 +190,14 @@ def main() -> None:
                 nor = img_cu[torch.where(success.int().cpu().squeeze() == 1)[0]].cpu()
                 adv = x_[torch.where(success.int().cpu().squeeze() == 1)[0]].cpu()
 
-            normalos.append(nor)
-            adverlos.append(adv)
+        normalos.append(nor)
+        adverlos.append(adv)
 
-            total_success.append(suc)
-            counter = counter + nor.shape[0]
-            
-            if counter >= args.max_counter:
-                break
+        total_success.append(suc)
+        counter = counter + nor.shape[0]
+        
+        if counter >= args.max_counter:
+            break
     
     normalos = torch.vstack(normalos)
     adverlos = torch.vstack(adverlos)

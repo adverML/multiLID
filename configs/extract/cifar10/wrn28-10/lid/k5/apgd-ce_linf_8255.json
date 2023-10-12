@@ -1,0 +1,17 @@
+{
+    "run_nr": "run_1",
+    "att": "apgd-ce",
+    "defense": "lid",
+    "dataset": "cifar10",
+    "model": "wrn28-10",
+    "load_nor": "normalos_apgd-ce_linf_8255.pt",
+    "load_adv": "adverlos_apgd-ce_linf_8255.pt",
+    "save_nor": "lid_normalos_apgd-ce_linf_8255.pt",
+    "save_adv": "lid_adverlos_apgd-ce_linf_8255.pt",
+    "eps": "8/255",
+    "k": 5,
+    "nr_samples": 2000,
+    "layers": ["relu", "conv4_3_relu_4", "conv4_2_relu_4", "conv4_1_relu_4", "conv4_0_relu_4", "conv3_3_relu_4", "conv3_2_relu_4", "conv3_1_relu_4", "conv3_0_relu_4", "conv2_3_relu_4", "conv2_2_relu_4", "conv2_1_relu_4", "conv2_0_relu_4"],
+    "load_json": "",
+    "save_json": ""
+}

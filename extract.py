@@ -24,6 +24,7 @@ import argparse
 
 import cfg
 
+from models.utils import get_model
 from defenses.multiLID import (multiLID, LID)
 
 from misc import (
@@ -33,7 +34,6 @@ from misc import (
     convert_to_float,
     create_dir
 )
-
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -58,20 +58,16 @@ def main() -> None:
     args.eps = convert_to_float(args.eps)
     print_args(args)
 
-
+    print("Load data")
     nor = torch.load(os.path.join(cfg.workspace, 'data/gen', args.dataset, args.model, args.att, args.load_nor))[:args.nr_samples]
     adv = torch.load(os.path.join(cfg.workspace, 'data/gen', args.dataset, args.model, args.att, args.load_adv))[:args.nr_samples]
 
-    # instantiate a model (could also be a TensorFlow or JAX model)
-    # model = models.resnet18(pretrained=True).eval()
-    model =  models.wide_resnet50_2(weights='DEFAULT').eval()
+    print("Load model and dataloader")
+    model, preprocessing = get_model(args)
+    model = model.eval()
 
-    preprocessing = {}
-    if args.normalize == "imagenet":
-        preprocessing = dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], axis=-3)
-
-        mean = torch.from_numpy(np.asarray(preprocessing['mean']))
-        std  = torch.from_numpy(np.asarray(preprocessing['std']))
+    mean = torch.from_numpy(np.asarray(preprocessing['mean']))
+    std  = torch.from_numpy(np.asarray(preprocessing['std']))
 
     dataset = torch.utils.data.TensorDataset(nor, adv)
     data_loader = torch.utils.data.DataLoader(
@@ -82,11 +78,22 @@ def main() -> None:
     normalos_nor = []
     adverlos_nor = []
     
-    # train_nodes, eval_nodes = get_graph_node_names(model)
-    fe = create_feature_extractor(model, return_nodes=args.layers)
+    fe = None
+    activation = None
+    if args.dataset == 'imagenet':
+        # train_nodes, eval_nodes = get_graph_node_names(model)
+        fe = create_feature_extractor(model, return_nodes=args.layers)
+    else:
+        from defenses.helper_extract import registrate_whitebox_features
+        get_layer_feature_maps, activation = registrate_whitebox_features(args, model)
+        def feature_extractor(args, model, batch, activation):
+            feat_img = model(batch)
+            X_act = get_layer_feature_maps(activation, args.layers)
+            return X_act
+        fe = feature_extractor
 
+    print("Normalize images!")
     for nor, adv in data_loader:
-        
         if not args.normalize == None:
             nor[:,0] = (nor[:,0] - mean[0]) / std[0]
             nor[:,1] = (nor[:,1] - mean[1]) / std[1]
@@ -102,10 +109,11 @@ def main() -> None:
     nor = torch.vstack(normalos_nor)
     adv = torch.vstack(adverlos_nor)
 
+    print("Calculate Features")
     if args.defense == 'lid':
-        lid, lid_adv = LID(     nor, adv, feature_extractor=fe, lid_dim=len(args.layers), k=args.k, batch_size=100, device='cpu')   
+        lid, lid_adv = LID(     args, nor, adv, feature_extractor=fe, model=model, activation=activation, lid_dim=len(args.layers), k=args.k, batch_size=100, device='cpu')   
     elif args.defense == 'multilid':
-        lid, lid_adv = multiLID(nor, adv, feature_extractor=fe, lid_dim=len(args.layers), k=args.k, batch_size=100, device='cpu')
+        lid, lid_adv = multiLID(args, nor, adv, feature_extractor=fe, model=model, activation=activation, lid_dim=len(args.layers), k=args.k, batch_size=100, device='cpu')
 
     normalos_nor = torch.from_numpy(lid)
     adverlos_nor = torch.from_numpy(lid_adv)

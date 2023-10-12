@@ -6,7 +6,7 @@ from scipy.spatial.distance import cdist
 
 
 @torch.no_grad()
-def multiLID(X, X_adv, feature_extractor, lid_dim, k=10, batch_size=100, device='cpu'):
+def multiLID(args, X, X_adv, feature_extractor, model, activation=None, lid_dim=1, k=10, batch_size=100, device='cpu'):
     """
     Get the local intrinsic dimensionality of each Xi in X_adv
     estimated by k close neighbours in the random batch it lies in.
@@ -51,10 +51,16 @@ def multiLID(X, X_adv, feature_extractor, lid_dim, k=10, batch_size=100, device=
         batch     = X[start:end]
         batch_adv = X_adv[start:end]
 
-        X_act = feature_extractor(batch.to(device)).values()
+        if activation == None:
+            X_act = feature_extractor(batch.to(device)).values()
+        else:
+            X_act = feature_extractor(args, model, batch.to(device), activation)
         X_act = [np.asarray(x.cpu().detach().numpy(), dtype=np.float32).reshape((n_feed, -1)) for x in X_act]
 
-        X_act_adv = feature_extractor(batch_adv.to(device)).values()
+        if activation == None:
+            X_act_adv = feature_extractor(batch_adv.to(device)).values()
+        else:
+            X_act_adv = feature_extractor(args, model, batch_adv.to(device), activation)
         X_act_adv = [np.asarray(x.cpu().detach().numpy(), dtype=np.float32).reshape((n_feed, -1)) for x in X_act_adv]    
         
         # random clean samples
@@ -81,7 +87,7 @@ def multiLID(X, X_adv, feature_extractor, lid_dim, k=10, batch_size=100, device=
 
 
 @torch.no_grad()
-def LID(X, X_adv, feature_extractor, lid_dim, k=10, batch_size=100, device='cpu'):
+def LID(args, X, X_adv, feature_extractor, model, activation=None, lid_dim=1, k=10, batch_size=100, device='cpu'):
     """
     Get the local intrinsic dimensionality of each Xi in X_adv
     estimated by k close neighbours in the random batch it lies in.
@@ -120,12 +126,19 @@ def LID(X, X_adv, feature_extractor, lid_dim, k=10, batch_size=100, device='cpu'
         batch     = X[start:end]
         batch_adv = X_adv[start:end]
         
-        X_act = feature_extractor(batch.to(device)).values()
+        if activation == None:
+            X_act = feature_extractor(batch.to(device)).values()
+        else:
+            X_act = feature_extractor(args, model, batch.to(device), activation)
         X_act = [np.asarray(x.cpu().detach().numpy(), dtype=np.float32).reshape((n_feed, -1)) for x in X_act]
 
-        X_act_adv = feature_extractor(batch_adv.to(device)).values()
-        X_act_adv = [np.asarray(x.cpu().detach().numpy(), dtype=np.float32).reshape((n_feed, -1)) for x in X_act_adv]    
-            
+        if activation == None:
+            X_act_adv = feature_extractor(batch_adv.to(device)).values()
+        else:
+            X_act_adv = feature_extractor(args, model, batch_adv.to(device), activation)
+        X_act_adv = [np.asarray(x.cpu().detach().numpy(), dtype=np.float32).reshape((n_feed, -1)) for x in X_act_adv] 
+
+        
         # random clean samples
         # Maximum likelihood estimation of local intrinsic dimensionality (LID)
         for i in range(lid_dim):

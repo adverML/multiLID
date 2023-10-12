@@ -29,7 +29,8 @@ from misc import (
     print_args,
     save_to_pt,
     convert_to_float,
-    create_dir
+    create_dir,
+    create_log_file
 )
 
 def compute_roc(y_true, y_pred, plot=False):
@@ -81,6 +82,7 @@ def main() -> None:
     normalos_fe = torch.load(os.path.join(base_pth, args.load_nor)).numpy()
     adverlos_fe = torch.load(os.path.join(base_pth, args.load_adv)).numpy()
 
+    # log = create_log_file(args)
 
     print("feature_method", args.defense, 'classifier', args.clf)
 
@@ -125,6 +127,11 @@ def main() -> None:
 
     print("auc_score: ", auc_score, "acc: ", acc)
 
+
+    # log["auc_score"] = auc_score
+    # log["acc"] = acc
+
+    # save_log(args, log, load_cfg)
 
 if __name__ == "__main__":
     main()

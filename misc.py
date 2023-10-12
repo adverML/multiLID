@@ -73,6 +73,26 @@ def check_str_startswith(string, substring):
     return False
 
 
+def create_log_file(args):    
+    create_dir(log_path)
+    log = vars(args)
+    return log
+
+
+def save_log(args, log_dict, load_cfg):
+    save_dir = os.path.join(log_path, load_cfg)
+    print("save log ...", save_dir)
+    print(log_dict)
+
+    create_dir(os.path.dirname(save_dir))
+
+    with open(save_dir, "w") as write_file:
+        try:
+            json.dump(log_dict, write_file, indent=4)
+        finally:
+            write_file.close()
+
+
 def create_pth(args, ws_path, filename, dataset, join=True):
     save_dir = os.path.join(ws_path, dataset)
     if ws_path == ws_extract_path:
@@ -121,3 +141,5 @@ def get_preprocessing(args):
         preprocessing = dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], axis=-3)
 
     return preprocessing
+
+
