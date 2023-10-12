@@ -1,4 +1,4 @@
-# python gen.py --load_json imagenet/wrn50-2/bim/bim_8255.json
+# python gen.py --load_json imagenet/wrn50-2/bim_8255.json
 
 
 python extract.py --load_json imagenet/wrn50-2/multilid/k30/bim_8255.json

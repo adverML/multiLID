@@ -1,4 +1,4 @@
-python gen.py --load_json cw/cw.json
+python gen.py --load_json imagenet/wrn50-2/cw.json
 
 
 python extract.py --load_json multilid/k30/cw.json

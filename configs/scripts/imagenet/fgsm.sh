@@ -1,6 +1,6 @@
-# python gen.py --load_json imagenet/wrn50-2/fgsm/fgsm_8255.json
-# python gen.py --load_json imagenet/wrn50-2/fgsm/fgsm_16255.json
-# python gen.py --load_json imagenet/wrn50-2/fgsm/fgsm_32255.json
+# python gen.py --load_json imagenet/wrn50-2/fgsm_8255.json
+# python gen.py --load_json imagenet/wrn50-2/fgsm_16255.json
+# python gen.py --load_json imagenet/wrn50-2/fgsm_32255.json
 
 # python extract.py --load_json multilid/k30/fgsm_4255.json
 python extract.py --load_json imagenet/wrn50-2/multilid/k30/fgsm_8255.json

@@ -24,7 +24,7 @@ import argparse
 
 import cfg
 
-from models.utils import get_model
+from models.helper import get_model
 from defenses.multiLID import (multiLID, LID)
 
 from misc import (
@@ -88,7 +88,10 @@ def main() -> None:
         get_layer_feature_maps, activation = registrate_whitebox_features(args, model)
         def feature_extractor(args, model, batch, activation):
             feat_img = model(batch)
-            X_act = get_layer_feature_maps(activation, args.layers)
+            if args.model == 'wrn28-10':
+                X_act = get_layer_feature_maps(activation, args.layers)
+            else:
+                X_act = get_layer_feature_maps(batch, args.layers)
             return X_act
         fe = feature_extractor
 

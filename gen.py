@@ -31,7 +31,7 @@ from misc import (
     get_preprocessing
 )
 
-from models.utils import get_model
+from models.helper import get_model
 
 DEEPFOOL = ['fgsm', 'bim', 'pgd', 'df', 'cw']
 AUTOATTACK = ['aa', 'apgd-ce']
@@ -70,7 +70,7 @@ def main() -> None:
     args.eps = convert_to_float(args.eps)
     print_args(args)
 
-    base_pth = os.path.join(cfg.workspace, 'data/gen', args.dataset, args.model, args.att)
+    base_pth = os.path.join(cfg.workspace, 'data/gen', args.dataset, args.model)
     base_log_pth = os.path.join(base_pth, 'logs')
     create_dir(base_pth)
     create_dir(base_log_pth)
@@ -125,7 +125,8 @@ def main() -> None:
         args.eps = None
     elif args.att in AUTOATTACK:
         from submodules.autoattack.autoattack import AutoAttack as AutoAttack_mod
-        adversary = AutoAttack_mod(fmodel, norm=args.norm.capitalize(), eps=args.eps, log_path=os.path.join(base_log_pth, args.load_json.split('/')[-1]), version=args.version)
+        adversary = AutoAttack_mod(fmodel, norm=args.norm.capitalize(), eps=args.eps, 
+                                    log_path=os.path.join(base_log_pth, args.load_json.split('/')[-1]).replace("json", "txt"), version=args.version)
         if args.version == 'individual':
             adversary.attacks_to_run = [ args.att ]
 
@@ -153,8 +154,6 @@ def main() -> None:
     total_success = []
     normalos = []
     adverlos = []
-    
-    
     for it, (img, lab) in tqdm(enumerate(data_loader), total=round((args.max_counter)/args.bs)):
 
         img_cu, lab_cu, restore_type = pred(fmodel, img.cuda(non_blocking=True), lab.cuda(non_blocking=True))
@@ -181,7 +180,7 @@ def main() -> None:
                     lab_cu = torch.unsqueeze(lab_cu, 0)
 
                 if args.version == 'standard':
-                    x_, y_, max_nr, success = adversary.run_standard_evaluation(img_cu, lab_cu, bs=args.bs, verbose=False, return_labels=True)
+                    x_, y_, max_nr, success = adversary.run_standard_evaluation(img_cu, lab_cu, bs=args.bs, verbose=args.debug, return_labels=True)
                 else: 
                     adv_complete = adversary.run_standard_evaluation_individual(img_cu, lab_cu, bs=args.bs, return_labels=True)
                     x_, y_, max_nr, success = adv_complete[ args.att ]
@@ -202,7 +201,7 @@ def main() -> None:
     normalos = torch.vstack(normalos)
     adverlos = torch.vstack(adverlos)
 
-    print("counter", counter, ", ", normalos.shape, np.mean(total_success))
+    print(args.att, ", counter {counter}", normalos.shape, np.mean(total_success))
 
     torch.save(normalos, os.path.join(base_pth, args.save_nor))
     torch.save(adverlos, os.path.join(base_pth, args.save_adv))

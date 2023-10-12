@@ -1,0 +1,13 @@
+{
+    "run_nr": "run_1",
+    "att": "df",
+    "dataset": "cifar100",
+    "model": "vgg16",
+    "bs": 128,
+    "save_nor": "normalos.pt",
+    "save_adv": "adverlos.pt",
+    "eps": null,
+    "debug": true,
+    "load_json": "",
+    "save_json": ""
+}

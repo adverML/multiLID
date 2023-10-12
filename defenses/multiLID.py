@@ -55,13 +55,14 @@ def multiLID(args, X, X_adv, feature_extractor, model, activation=None, lid_dim=
             X_act = feature_extractor(batch.to(device)).values()
         else:
             X_act = feature_extractor(args, model, batch.to(device), activation)
+
         X_act = [np.asarray(x.cpu().detach().numpy(), dtype=np.float32).reshape((n_feed, -1)) for x in X_act]
 
         if activation == None:
             X_act_adv = feature_extractor(batch_adv.to(device)).values()
         else:
             X_act_adv = feature_extractor(args, model, batch_adv.to(device), activation)
-        X_act_adv = [np.asarray(x.cpu().detach().numpy(), dtype=np.float32).reshape((n_feed, -1)) for x in X_act_adv]    
+        X_act_adv = [np.asarray(x.cpu().detach().numpy(), dtype=np.float32).reshape((n_feed, -1)) for x in X_act_adv]
         
         # random clean samples
         # Maximum likelihood estimation of local intrinsic dimensionality (LID)

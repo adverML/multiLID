@@ -1,0 +1,17 @@
+{
+    "run_nr": "run_1",
+    "att": "pgd",
+    "defense": "multilid",
+    "dataset": "cifar10",
+    "model": "wrn28-10",
+    "load_nor": "normalos_8255.pt",
+    "load_adv": "adverlos_8255.pt",
+    "save_nor": "multilid_normalos_8255.pt",
+    "save_adv": "multilid_adverlos_8255.pt",
+    "eps": "8/255",
+    "k": 20,
+    "nr_samples": 2000,
+    "layers": ["init_conv", "seq_conv2", "seq_conv3", "seq_conv4", "relu"],
+    "load_json": "",
+    "save_json": ""
+}

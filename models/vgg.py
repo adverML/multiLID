@@ -10,7 +10,7 @@
 
 import torch
 import torch.nn as nn
-from conf import settings
+
 
 cfg = {
     'A' : [64,     'M', 128,      'M', 256, 256,           'M', 512, 512,           'M', 512, 512,           'M'],
@@ -28,8 +28,8 @@ class VGG(nn.Module):
         self.preprocessing = preprocessing
         
         if not len(self.preprocessing) == 0:
-            self.mu = torch.tensor(preprocessing['mean']).float().view(3, 1, 1).cuda()
-            self.sigma = torch.tensor(preprocessing['std']).float().view(3, 1, 1).cuda()
+            self.mu = torch.tensor(preprocessing['mean']).float().view(3, 1, 1)#.cuda()
+            self.sigma = torch.tensor(preprocessing['std']).float().view(3, 1, 1)#.cuda()
 
         self.classifier = nn.Sequential(
             nn.Linear(512, 4096),

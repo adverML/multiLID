@@ -1,1 +1,1 @@
-python gen.py --load_json imagenet/vgg16/fgsm/fgsm_8255.json
+python gen.py --load_json imagenet/wrn50-2/imagenet/vgg16/fgsm_8255.json

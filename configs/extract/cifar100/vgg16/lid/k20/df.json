@@ -1,0 +1,17 @@
+{
+    "run_nr": "run_1",
+    "att": "df",
+    "defense": "lid",
+    "dataset": "cifar100",
+    "model": "vgg16",
+    "load_nor": "normalos.pt",
+    "load_adv": "adverlos.pt",
+    "save_nor": "lid_normalos.pt",
+    "save_adv": "lid_adverlos.pt",
+    "eps": null,
+    "k": 20,
+    "nr_samples": 2000,
+    "layers": [2,5,9,12,16,19,22,26,29,32,36,39,42],
+    "load_json": "",
+    "save_json": ""
+}
