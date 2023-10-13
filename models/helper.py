@@ -58,6 +58,8 @@ def get_model(args):
             model = vgg16_bn(num_class=100, preprocessing={})
             ckpt = torch.load('/home/lorenzp/adversialml/src/checkpoint/vgg16/vgg_cif100.pth')
             model.load_state_dict(ckpt)
+    
+    print(preprocessing)
 
     
     return model, preprocessing

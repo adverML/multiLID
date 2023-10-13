@@ -59,8 +59,8 @@ def main() -> None:
     print_args(args)
 
     print("Load data")
-    nor = torch.load(os.path.join(cfg.workspace, 'data/gen', args.dataset, args.model, args.att, args.load_nor))[:args.nr_samples]
-    adv = torch.load(os.path.join(cfg.workspace, 'data/gen', args.dataset, args.model, args.att, args.load_adv))[:args.nr_samples]
+    nor = torch.load(os.path.join(cfg.workspace, 'data/gen', args.run_nr, args.dataset, args.model, args.att, args.load_nor))[:args.nr_samples]
+    adv = torch.load(os.path.join(cfg.workspace, 'data/gen', args.run_nr, args.dataset, args.model, args.att, args.load_adv))[:args.nr_samples]
 
     print("Load model and dataloader")
     model, preprocessing = get_model(args)
@@ -121,7 +121,7 @@ def main() -> None:
     normalos_nor = torch.from_numpy(lid)
     adverlos_nor = torch.from_numpy(lid_adv)
     
-    base_pth = os.path.join(cfg.workspace, 'data/extract', args.dataset, args.model, args.defense, args.att, 'k'+str(args.k))
+    base_pth = os.path.join(cfg.workspace, 'data/extract', args.run_nr, args.dataset, args.model, args.defense, args.att, 'k'+str(args.k))
     create_dir(base_pth)
     torch.save(normalos_nor, os.path.join(base_pth, args.save_nor))
     torch.save(adverlos_nor, os.path.join(base_pth, args.save_adv))

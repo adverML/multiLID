@@ -73,20 +73,19 @@ def check_str_startswith(string, substring):
     return False
 
 
-def create_log_file(args):    
+def create_log_file(args, log_path):    
     create_dir(log_path)
     log = vars(args)
     return log
 
 
-def save_log(args, log_dict, load_cfg):
-    save_dir = os.path.join(log_path, load_cfg)
+def save_log(args, log_dict, save_dir):
     print("save log ...", save_dir)
     print(log_dict)
 
-    create_dir(os.path.dirname(save_dir))
+    save_dir_file = os.path.join(save_dir, args.load_json.split('/')[-1].replace("json", "txt"))
 
-    with open(save_dir, "w") as write_file:
+    with open(save_dir_file , "w") as write_file:
         try:
             json.dump(log_dict, write_file, indent=4)
         finally:
@@ -130,7 +129,6 @@ def str2bool(v):
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
-    
 def get_preprocessing(args):
 
     if args.dataset == 'cifar10':

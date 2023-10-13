@@ -101,6 +101,7 @@ def LID(args, X, X_adv, feature_extractor, model, activation=None, lid_dim=1, k=
             lids_adv: LID of advs images of shape (num_examples, lid_dim)
     """
     print("Number of layers to estimate: ", lid_dim)
+    print("selected k: ", k)
 
     # lid of a batch of query points X
     def mle_batch(data, batch, k):
@@ -108,7 +109,7 @@ def LID(args, X, X_adv, feature_extractor, model, activation=None, lid_dim=1, k=
         batch = np.asarray(batch, dtype=np.float32)
 
         k = min(k, len(data)-1)
-        print("selected k: ", k)
+        
             
         f = lambda v: - k / np.sum(np.log(v/v[-1]))
         a = cdist(batch, data)

@@ -2,3 +2,6 @@
 
 
 git submodule add -b forspectraldefense https://github.com/adverML/auto-attack.git autoattack
+
+
+ cp  /home/lorenzp/adversialml/src/data/attacks/run_1/imagenet/wrn_50_2/cw/images_adv ./multiLID/data/gen/imagenet/wrn50-2/pgd/

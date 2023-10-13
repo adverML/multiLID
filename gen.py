@@ -28,7 +28,8 @@ from misc import (
     convert_to_float,
     create_dir,
     str2bool,
-    get_preprocessing
+    create_log_file,
+    save_log
 )
 
 from models.helper import get_model
@@ -50,6 +51,7 @@ def main() -> None:
     # instantiate a model (could also be a TensorFlow or JAX model)
     # model = models.resnet18(pretrained=True).eval()
     parser = argparse.ArgumentParser("gen")
+    parser.add_argument("--run_nr",  default="run_1", help="")
     parser.add_argument("--att",  default="fgsm", choices=['fgsm', 'bim', 'pgd', 'df', 'cw'], help="")
     parser.add_argument("--dataset",  default="imagenet", choices=['imagenet', 'cifar10', 'cifar100'], help="")
     parser.add_argument("--model",  default="wrn50-2", choices=['wrn50-2', 'wrn28-10', 'vgg16'], help="")
@@ -61,6 +63,7 @@ def main() -> None:
     parser.add_argument("--bs",   default=16, help="")
     parser.add_argument("--max_counter",  default=2000, help="")
     parser.add_argument("--debug",  default=True, type=str2bool, help="")
+    parser.add_argument("--shuffle",  default=False, type=str2bool, help="")
 
     parser.add_argument('--save_json', default="", help='Save settings to file in json format. Ignored in json file')
     parser.add_argument('--load_json', default="", help='Load settings from file in json format. Command line options override values in file.')
@@ -70,12 +73,13 @@ def main() -> None:
     args.eps = convert_to_float(args.eps)
     print_args(args)
 
-    base_pth = os.path.join(cfg.workspace, 'data/gen', args.dataset, args.model)
-    base_log_pth = os.path.join(base_pth, 'logs')
+    print("Create paths!")
+    base_pth = os.path.join(cfg.workspace, 'data/gen', args.run_nr, args.dataset, args.model, args.att)
     create_dir(base_pth)
-    create_dir(base_log_pth)
+    log_pth = os.path.join(base_pth, 'logs')
+    log = create_log_file(args, log_pth)
 
-
+    print("Load model and data")
     model, preprocessing = get_model(args)
     model = model.eval()
     fmodel = PyTorchModel(model, bounds=(0, 1), preprocessing=preprocessing)
@@ -100,7 +104,7 @@ def main() -> None:
         dataset_dir_path = os.path.join(cfg.DATASET_BASE_PTH,"cifar10") 
 
         dataset = datasets.CIFAR10(root=dataset_dir_path, train=False, transform=transform, download=True)
-        data_loader = torch.utils.data.DataLoader(dataset, batch_size=args.bs, shuffle=False, num_workers=8)
+        data_loader = torch.utils.data.DataLoader(dataset, batch_size=args.bs, shuffle=args.shuffle, num_workers=8)
 
     elif args.dataset == 'cifar100':
         transform_list = [transforms.ToTensor()] 
@@ -109,8 +113,9 @@ def main() -> None:
         dataset_dir_path =  os.path.join(cfg.DATASET_BASE_PTH,"cifar100") 
 
         dataset = datasets.CIFAR100(root=dataset_dir_path, train=False, transform=transform, download=True)
-        data_loader = torch.utils.data.DataLoader(dataset, batch_size=args.bs, shuffle=False, num_workers=8)
+        data_loader = torch.utils.data.DataLoader(dataset, batch_size=args.bs, shuffle=args.shuffle, num_workers=8)
 
+    print("Prepare attack")
     if args.att == 'fgsm':
         attack = fa.FGSM()
     elif args.att == 'bim':
@@ -126,15 +131,16 @@ def main() -> None:
     elif args.att in AUTOATTACK:
         from submodules.autoattack.autoattack import AutoAttack as AutoAttack_mod
         adversary = AutoAttack_mod(fmodel, norm=args.norm.capitalize(), eps=args.eps, 
-                                    log_path=os.path.join(base_log_pth, args.load_json.split('/')[-1]).replace("json", "txt"), version=args.version)
+                                    log_path=os.path.join(log_pth, args.load_json.split('/')[-1]).replace("json", "log"),  verbose=args.debug, version=args.version)
         if args.version == 'individual':
             adversary.attacks_to_run = [ args.att ]
 
     # report the success rate of the attack (percentage of samples that could
     # be adversarially perturbed) and the robust accuracy (the remaining accuracy
     # of the model when it is attacked)
-    (images, labels), restore_type = ep.astensors_(*samples(fmodel, dataset=args.dataset, batchsize=args.bs))
+    (images, labels), restore_type = ep.astensors_(*samples(fmodel, dataset=args.dataset, batchsize=20))
     clean_acc = accuracy(fmodel, images, labels) * 100
+
     print(f"clean accuracy:  {clean_acc:.1f} %")
     print(images.shape)
     if args.att in DEEPFOOL:
@@ -150,17 +156,22 @@ def main() -> None:
             ""
         )
 
+    print("Generate data")
     counter = 0
+    clean_acc_list = []
     total_success = []
     normalos = []
     adverlos = []
     for it, (img, lab) in tqdm(enumerate(data_loader), total=round((args.max_counter)/args.bs)):
 
-        img_cu, lab_cu, restore_type = pred(fmodel, img.cuda(non_blocking=True), lab.cuda(non_blocking=True))
+        img_cu, lab_cu = img.cuda(non_blocking=True), lab.cuda(non_blocking=True)
+        clean_acc_list.append(accuracy(fmodel, img_cu, lab_cu) * 100)
+        
+        img_cu, lab_cu, restore_type = pred(fmodel, img_cu, lab_cu) # select only correct predicted
 
-        clean_acc = accuracy(fmodel, img_cu, lab_cu) * 100
         if args.debug:
-            print("clean_acc: ", clean_acc)
+            print("clean_acc for att: ", np.mean(clean_acc_list))
+            print("accuracy model: {:.2f}".format( img_cu.shape[0]/img.shape[0]) )
 
         if args.att in DEEPFOOL:
             lab_cu = fb.criteria.Misclassification(lab_cu)
@@ -180,7 +191,7 @@ def main() -> None:
                     lab_cu = torch.unsqueeze(lab_cu, 0)
 
                 if args.version == 'standard':
-                    x_, y_, max_nr, success = adversary.run_standard_evaluation(img_cu, lab_cu, bs=args.bs, verbose=args.debug, return_labels=True)
+                    x_, y_, max_nr, success = adversary.run_standard_evaluation(img_cu, lab_cu, bs=args.bs, return_labels=True)
                 else: 
                     adv_complete = adversary.run_standard_evaluation_individual(img_cu, lab_cu, bs=args.bs, return_labels=True)
                     x_, y_, max_nr, success = adv_complete[ args.att ]
@@ -201,7 +212,14 @@ def main() -> None:
     normalos = torch.vstack(normalos)
     adverlos = torch.vstack(adverlos)
 
-    print(args.att, ", counter {counter}", normalos.shape, np.mean(total_success))
+    asr = np.mean(total_success)
+    print(args.att, f", counter {counter}", normalos.shape, asr)
+
+    log['final_nr_samples'] = counter
+    log['asr'] = asr
+    log['clean_acc'] = 0 if len(clean_acc_list) == None else np.mean(clean_acc_list)
+
+    save_log(args, log, log_pth)
 
     torch.save(normalos, os.path.join(base_pth, args.save_nor))
     torch.save(adverlos, os.path.join(base_pth, args.save_adv))

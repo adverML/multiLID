@@ -16,10 +16,10 @@ import copy
 import numpy as np
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import scale
 from sklearn.metrics import roc_curve, auc, roc_auc_score
 from sklearn.metrics import accuracy_score, precision_score, recall_score
 from sklearn.preprocessing import scale, MinMaxScaler, StandardScaler
+from sklearn.preprocessing import scale
 import argparse
 
 import cfg
@@ -58,10 +58,10 @@ def compute_roc(y_true, y_pred, plot=False):
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--att",  default="fgsm", choices=['fgsm', 'bim', 'pgd', 'df', 'cw'], help="")
+    parser.add_argument("--att",        default="fgsm", choices=['fgsm', 'bim', 'pgd', 'df', 'cw'], help="")
     parser.add_argument("--defense",    default="multilid", choices=['multilid', 'lid'], help="")
-    parser.add_argument("--dataset",  default="imagenet", choices=['imagenet', 'cifar10', 'cifar100'], help="")
-    parser.add_argument("--model",  default="wrn50-2", choices=['wrn50-2', 'wrn28-10', 'vgg16'], help="")
+    parser.add_argument("--dataset",    default="imagenet", choices=['imagenet', 'cifar10', 'cifar100'], help="")
+    parser.add_argument("--model",      default="wrn50-2", choices=['wrn50-2', 'wrn28-10', 'vgg16'], help="")
     parser.add_argument("--load_nor",   default="normalos_8255.pt", help="save_gen_nor")
     parser.add_argument("--load_adv",   default="adverlos_8255.pt", help="save_gen_adv")
     parser.add_argument("--eps",        default="8/255", help="")
@@ -70,15 +70,15 @@ def main() -> None:
     parser.add_argument("--clf",        default='rf', choices=['rf', 'lr'], help="")
     parser.add_argument("--tr_size",    default=0.72, help="")
 
-    parser.add_argument('--save_json', default="", help='Save settings to file in json format. Ignored in json file')
-    parser.add_argument('--load_json', default="", help='Load settings from file in json format. Command line options override values in file.')
+    parser.add_argument('--save_json',  default="", help='Save settings to file in json format. Ignored in json file')
+    parser.add_argument('--load_json',  default="", help='Load settings from file in json format. Command line options override values in file.')
 
     args = parser.parse_args()
     args = args_handling(args, parser, "configs/detect")
     args.eps = convert_to_float(args.eps)
     print_args(args)
 
-    base_pth = os.path.join(cfg.workspace, 'data/extract', args.dataset, args.model, args.defense, args.att, 'k'+str(args.k))
+    base_pth = os.path.join(cfg.workspace, 'data/extract', args.run_nr, args.dataset, args.model, args.defense, args.att, 'k'+str(args.k))
     normalos_fe = torch.load(os.path.join(base_pth, args.load_nor)).numpy()
     adverlos_fe = torch.load(os.path.join(base_pth, args.load_adv)).numpy()
 
