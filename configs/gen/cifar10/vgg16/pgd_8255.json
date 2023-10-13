@@ -1,7 +1,7 @@
 {
     "run_nr": "run_1",
     "att": "pgd",
-    "dataset": "cifar100",
+    "dataset": "cifar10",
     "model": "vgg16",
     "bs": 256,
     "save_nor": "normalos_8255.pt",

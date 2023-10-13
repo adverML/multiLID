@@ -32,7 +32,10 @@ from misc import (
     print_args,
     save_to_pt,
     convert_to_float,
-    create_dir
+    str2bool,
+    create_dir,
+    create_log_file,
+    save_log
 )
 
 def main() -> None:
@@ -47,7 +50,7 @@ def main() -> None:
     parser.add_argument("--save_adv",   default="adverlos_8255.pt", help="")
     parser.add_argument("--eps",        default="8/255", help="")
     parser.add_argument("--k",          default=30, type=int, help="")
-    parser.add_argument("--normalize",  default="imagenet", help="")
+    parser.add_argument("--normalize",  default=True, type=str2bool, help="")
     parser.add_argument("--nr_samples", default=2000, type=int, help="")
 
     parser.add_argument('--save_json', default="", help='Save settings to file in json format. Ignored in json file')
@@ -58,9 +61,16 @@ def main() -> None:
     args.eps = convert_to_float(args.eps)
     print_args(args)
 
+    print("Create paths!")
+    base_pth = os.path.join(cfg.workspace, 'data/gen', args.run_nr, args.dataset, args.model, args.att)
+    create_dir(base_pth)
+    log_pth = os.path.join(base_pth, 'logs')
+    log = create_log_file(args, log_pth)
+
     print("Load data")
-    nor = torch.load(os.path.join(cfg.workspace, 'data/gen', args.run_nr, args.dataset, args.model, args.att, args.load_nor))[:args.nr_samples]
-    adv = torch.load(os.path.join(cfg.workspace, 'data/gen', args.run_nr, args.dataset, args.model, args.att, args.load_adv))[:args.nr_samples]
+    nor = torch.load(os.path.join(base_pth, args.load_nor))[:args.nr_samples]
+    adv = torch.load(os.path.join(base_pth, args.load_adv))[:args.nr_samples]
+
 
     print("Load model and dataloader")
     model, preprocessing = get_model(args)
@@ -97,7 +107,7 @@ def main() -> None:
 
     print("Normalize images!")
     for nor, adv in data_loader:
-        if not args.normalize == None:
+        if args.normalize:
             nor[:,0] = (nor[:,0] - mean[0]) / std[0]
             nor[:,1] = (nor[:,1] - mean[1]) / std[1]
             nor[:,2] = (nor[:,2] - mean[2]) / std[2]
@@ -125,6 +135,8 @@ def main() -> None:
     create_dir(base_pth)
     torch.save(normalos_nor, os.path.join(base_pth, args.save_nor))
     torch.save(adverlos_nor, os.path.join(base_pth, args.save_adv))
+    
+    save_log(args, log, log_pth)
 
 
 if __name__ == "__main__":

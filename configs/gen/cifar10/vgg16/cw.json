@@ -1,7 +1,7 @@
 {
     "run_nr": "run_1",
     "att": "cw",
-    "dataset": "cifar100",
+    "dataset": "cifar10",
     "model": "vgg16",
     "bs": 128,
     "save_nor": "normalos.pt",
