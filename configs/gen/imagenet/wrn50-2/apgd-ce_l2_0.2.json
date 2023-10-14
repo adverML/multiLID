@@ -1,0 +1,15 @@
+{
+    "run_nr": "run_1",
+    "att": "apgd-ce",
+    "dataset": "imagenet",
+    "model": "wrn50-2",
+    "bs": 32,
+    "save_nor": "normalos_apgd-ce_l2_0.2.pt",
+    "save_adv": "adverlos_apgd-ce_l2_0.2.pt",
+    "eps": "0.2",
+    "version": "individual",
+    "norm": "l2",
+    "debug": true,
+    "load_json": "",
+    "save_json": ""
+}

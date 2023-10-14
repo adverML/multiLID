@@ -1,0 +1,15 @@
+{
+    "run_nr": "run_1",
+    "att": "apgd-ce",
+    "dataset": "cifar10",
+    "model": "wrn28-10",
+    "bs": 256,
+    "save_nor": "normalos_8255.pt",
+    "save_adv": "adverlos_8255.pt",
+    "eps": "8/255",
+    "version": "individual",
+    "norm": "linf",
+    "debug": true,
+    "load_json": "",
+    "save_json": ""
+}
