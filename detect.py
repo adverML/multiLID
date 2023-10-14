@@ -57,7 +57,8 @@ def compute_roc(y_true, y_pred, plot=False):
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser("extract")
+    parser.add_argument("--run_nr",  default="run_1", help="")
     parser.add_argument("--att",        default="fgsm", choices=['fgsm', 'bim', 'pgd', 'df', 'cw'], help="")
     parser.add_argument("--defense",    default="multilid", choices=['multilid', 'lid'], help="")
     parser.add_argument("--dataset",    default="imagenet", choices=['imagenet', 'cifar10', 'cifar100'], help="")

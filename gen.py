@@ -221,6 +221,7 @@ def main() -> None:
 
     save_log(args, log, log_pth)
 
+    print("save path: ", os.path.join(base_pth, args.save_nor))
     torch.save(normalos, os.path.join(base_pth, args.save_nor))
     torch.save(adverlos, os.path.join(base_pth, args.save_adv))
 
