@@ -1,6 +1,6 @@
 {
     "run_nr": "run_1",
-    "att": "pgd",
+    "att": "df",
     "defense": "lid",
     "dataset": "imagenet",
     "model": "wrn50-2",

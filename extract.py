@@ -40,11 +40,11 @@ from misc import (
 
 def main() -> None:
     parser = argparse.ArgumentParser("extract")
-    parser.add_argument("--run_nr",  default="run_1", help="")
-    parser.add_argument("--att",  default="fgsm", choices=['fgsm', 'bim', 'pgd', 'df', 'cw'], help="")
+    parser.add_argument("--run_nr",     default="run_1", help="")
+    parser.add_argument("--att",        default="fgsm", choices=['fgsm', 'bim', 'pgd', 'df', 'cw'], help="")
     parser.add_argument("--defense",    default="multilid", choices=['multilid', 'lid'], help="")
-    parser.add_argument("--dataset",  default="imagenet", choices=['imagenet', 'cifar10', 'cifar100'], help="")
-    parser.add_argument("--model",  default="wrn50-2", choices=['wrn50-2', 'wrn28-10', 'vgg16'], help="")
+    parser.add_argument("--dataset",    default="imagenet", choices=['imagenet', 'cifar10', 'cifar100'], help="")
+    parser.add_argument("--model",      default="wrn50-2", choices=['wrn50-2', 'wrn28-10', 'vgg16'], help="")
     parser.add_argument("--load_nor",   default="normalos_8255.pt", help="")
     parser.add_argument("--load_adv",   default="adverlos_8255.pt", help="")
     parser.add_argument("--save_nor",   default="normalos_8255.pt", help="")

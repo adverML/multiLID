@@ -1,6 +1,6 @@
 {
     "run_nr": "run_1",
-    "att": "fgsm",
+    "att": "bim",
     "defense": "lid",
     "dataset": "cifar10",
     "model": "wrn28-10",
