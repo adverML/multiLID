@@ -71,7 +71,7 @@ def main() -> None:
     print("Load data")
     nor = torch.load(os.path.join(base_pth, args.load_nor))[:args.nr_samples]
     adv = torch.load(os.path.join(base_pth, args.load_adv))[:args.nr_samples]
-
+    
 
     print("Load model and dataloader")
     model, preprocessing = get_model(args)

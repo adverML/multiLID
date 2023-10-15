@@ -170,8 +170,8 @@ def main() -> None:
         img_cu, lab_cu, restore_type = pred(fmodel, img_cu, lab_cu) # select only correct predicted
 
         if args.debug:
-            print("clean_acc for att: ", np.mean(clean_acc_list))
-            print("accuracy model: {:.2f}".format( img_cu.shape[0]/img.shape[0]) )
+            print("clean_acc for att: {:.2f}%".format(np.mean(clean_acc_list)))
+            print("accuracy    model: {:.2f}%".format( (img_cu.shape[0]/img.shape[0]))*100 )
 
         if args.att in DEEPFOOL:
             lab_cu = fb.criteria.Misclassification(lab_cu)
@@ -216,8 +216,8 @@ def main() -> None:
     print(args.att, f", counter {counter}", normalos.shape, asr)
 
     log['final_nr_samples'] = counter
-    log['asr'] = asr
-    log['clean_acc'] = 0 if len(clean_acc_list) == None else np.mean(clean_acc_list)
+    log['asr'] = round(asr,4)
+    log['clean_acc'] = 0 if len(clean_acc_list) == None else round(np.mean(clean_acc_list), 4)
 
     save_log(args, log, log_pth)
 

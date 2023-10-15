@@ -108,8 +108,6 @@ python extract.py --load_json imagenet/wrn50-2/multilid/k50/apgd-ce_linf_05255.j
 
 
 
-
-
 python extract.py --load_json imagenet/wrn50-2/lid/k3/apgd-ce_linf_8255.json  --run_nr run_2 
 python extract.py --load_json imagenet/wrn50-2/lid/k5/apgd-ce_linf_8255.json  --run_nr run_2 
 python extract.py --load_json imagenet/wrn50-2/lid/k10/apgd-ce_linf_8255.json --run_nr run_2 
