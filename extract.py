@@ -65,7 +65,8 @@ def main() -> None:
     print("Create paths!")
     base_pth = os.path.join(cfg.workspace, 'data/gen', args.run_nr, args.dataset, args.model, args.att)
     create_dir(base_pth)
-    log_pth = os.path.join(base_pth, 'logs')
+    base_pth_extr = os.path.join(cfg.workspace, 'data/extract', args.run_nr, args.dataset, args.model, args.defense, args.att, 'k'+str(args.k))
+    log_pth = os.path.join(base_pth_extr, 'logs')
     log = create_log_file(args, log_pth)
 
     print("Load data")
@@ -132,10 +133,9 @@ def main() -> None:
     normalos_nor = torch.from_numpy(lid)
     adverlos_nor = torch.from_numpy(lid_adv)
     
-    base_pth = os.path.join(cfg.workspace, 'data/extract', args.run_nr, args.dataset, args.model, args.defense, args.att, 'k'+str(args.k))
-    create_dir(base_pth)
-    torch.save(normalos_nor, os.path.join(base_pth, args.save_nor))
-    torch.save(adverlos_nor, os.path.join(base_pth, args.save_adv))
+    create_dir(base_pth_extr)
+    torch.save(normalos_nor, os.path.join(base_pth_extr, args.save_nor))
+    torch.save(adverlos_nor, os.path.join(base_pth_extr, args.save_adv))
     
     save_log(args, log, log_pth)
 
