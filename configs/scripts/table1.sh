@@ -65,12 +65,12 @@ python gen.py --load_json cifar100/vgg16/cw.json           --run_nr run_2 --shuf
 python gen.py --load_json cifar100/vgg16/df.json           --run_nr run_2 --shuffle True            
 
 
-python gen.py --load_json imagenet/wrn50-2/fgsm_8255.json --run_nr run_2 
-python gen.py --load_json imagenet/wrn50-2/bim_8255.json  --run_nr run_2 
-python gen.py --load_json imagenet/wrn50-2/pgd_8255.json  --run_nr run_2 
-python gen.py --load_json imagenet/wrn50-2/aa_8255.json   --run_nr run_2 
-python gen.py --load_json imagenet/wrn50-2/df.json        --run_nr run_2 
-python gen.py --load_json imagenet/wrn50-2/cw.json        --run_nr run_2 
+python gen.py --load_json imagenet/wrn50-2/fgsm_8255.json --run_nr run_2  
+python gen.py --load_json imagenet/wrn50-2/bim_8255.json  --run_nr run_2  
+python gen.py --load_json imagenet/wrn50-2/pgd_8255.json  --run_nr run_2  
+python gen.py --load_json imagenet/wrn50-2/aa_8255.json   --run_nr run_2  
+python gen.py --load_json imagenet/wrn50-2/df.json        --run_nr run_2  
+python gen.py --load_json imagenet/wrn50-2/cw.json        --run_nr run_2  
 
 
 # # run 3

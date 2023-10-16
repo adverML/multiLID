@@ -171,7 +171,7 @@ def main() -> None:
 
         if args.debug:
             print("clean_acc for att: {:.2f}%".format(np.mean(clean_acc_list)))
-            print("accuracy    model: {:.2f}%".format( (img_cu.shape[0]/img.shape[0]))*100 )
+            print("accuracy    model: {:.2f}%".format( (img_cu.shape[0]/img.shape[0])*100) )
 
         if args.att in DEEPFOOL:
             lab_cu = fb.criteria.Misclassification(lab_cu)
