@@ -1,6 +1,6 @@
 {
     "run_nr": "run_1",
-    "att": "bim",
+    "att": "pgd",
     "defense": "multilid",
     "dataset": "cifar100",
     "model": "vgg16",

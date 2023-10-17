@@ -135,7 +135,7 @@ def main() -> None:
         if args.version == 'individual':
             adversary.attacks_to_run = [ args.att ]
 
-    # report the success rate of the attack (percentage of samples that could
+    # report the success rate of the attack (percentage of samples that could 
     # be adversarially perturbed) and the robust accuracy (the remaining accuracy
     # of the model when it is attacked)
     (images, labels), restore_type = ep.astensors_(*samples(fmodel, dataset=args.dataset, batchsize=20))
@@ -163,12 +163,12 @@ def main() -> None:
     normalos = []
     adverlos = []
     for it, (img, lab) in tqdm(enumerate(data_loader), total=round((args.max_counter)/args.bs)):
-
+        
         img_cu, lab_cu = img.cuda(non_blocking=True), lab.cuda(non_blocking=True)
         clean_acc_list.append(accuracy(fmodel, img_cu, lab_cu) * 100)
         
         img_cu, lab_cu, restore_type = pred(fmodel, img_cu, lab_cu) # select only correct predicted
-
+        
         if args.debug:
             print("clean_acc for att: {:.2f}%".format(np.mean(clean_acc_list)))
             print("accuracy    model: {:.2f}%".format( (img_cu.shape[0]/img.shape[0])*100) )
