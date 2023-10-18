@@ -3,8 +3,8 @@
 
 This repository provides the official Python implementation of  "Unfolding local growth rate estimates for (almost) perfect adversarial detection".
 
-The multiLID is an improvment of the original [LID](https://github.com/adverML/lid_adversarial_subspace_detection). This paper is an improvement of the LID [1], which was just meant trying to describe the adversarial subspaces. 
-Later [2], the LID is even meant not be mathematically effective enough to detect adversarial examples. We did some changes and could find almost perfect detection.
+The multiLID is an improvment of the original [LID](https://github.com/adverML/lid_adversarial_subspace_detection). This paper is an improvement of the LID [1], which was just meant trying to describe the adversarial subspaces.
+Later in [2], the LID is even meant not be mathematically effective enough to detect adversarial examples. We did some changes and could improve the detection.
 
 
 

@@ -1,5 +1,5 @@
 python gen.py --load_json imagenet/wrn50-2/apgd-ce/apgd-ce_linf_8255.json
-python gen.py --load_json imagenet/wrn50-2/apgd-ce/apgd-ce_l2_8255.json
+python gen.py --load_json imagenet/wrn50-2/apgd-ce/apgd-ce_l2_0.1.json
 
 python extract.py --load_json imagenet/wrn50-2/multilid/k3/apgd-ce_linf_8255.json
 python extract.py --load_json imagenet/wrn50-2/multilid/k5/apgd-ce_linf_8255.json
