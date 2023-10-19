@@ -73,7 +73,6 @@ def main() -> None:
     nor = torch.load(os.path.join(base_pth, args.load_nor))[:args.nr_samples]
     adv = torch.load(os.path.join(base_pth, args.load_adv))[:args.nr_samples]
     
-
     print("Load model and dataloader")
     model, preprocessing = get_model(args)
     model = model.eval()
@@ -134,6 +133,7 @@ def main() -> None:
     adverlos_nor = torch.from_numpy(lid_adv)
     
     create_dir(base_pth_extr)
+    print(os.path.join(base_pth_extr, args.save_nor))
     torch.save(normalos_nor, os.path.join(base_pth_extr, args.save_nor))
     torch.save(adverlos_nor, os.path.join(base_pth_extr, args.save_adv))
     
