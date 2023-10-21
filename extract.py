@@ -83,7 +83,8 @@ def main() -> None:
     dataset = torch.utils.data.TensorDataset(nor, adv)
     data_loader = torch.utils.data.DataLoader(
         dataset,
-        batch_size=1, shuffle=True, num_workers=8, pin_memory=True
+        batch_size=1, shuffle=True, num_workers=8, pin_memory=True, 
+        drop_last=True
     )
     
     normalos_nor = []
