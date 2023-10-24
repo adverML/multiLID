@@ -5,6 +5,7 @@ It therefore has a slightly different interface.
 https://github.com/bethgelab/foolbox/blob/master/examples/spatial_attack_pytorch_resnet18.py
 """
 import os
+from datetime import datetime
 import torchvision.models as models
 import eagerpy as ep
 from foolbox import PyTorchModel, accuracy, samples
@@ -21,7 +22,7 @@ import torchvision.datasets as datasets
 import copy
 import numpy as np
 import argparse
-from datetime import datetime
+
 import cfg
 
 from models.helper import get_model

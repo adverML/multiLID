@@ -5,6 +5,8 @@ It therefore has a slightly different interface.
 https://github.com/bethgelab/foolbox/blob/master/examples/spatial_attack_pytorch_resnet18.py
 """
 import os
+from datetime import datetime
+
 import eagerpy as ep
 from foolbox import PyTorchModel, accuracy, samples
 import foolbox.attacks as fa
@@ -19,7 +21,6 @@ import copy
 import argparse
 from tqdm import tqdm
 import cfg
-from datetime import datetime
 
 from misc import (
     args_handling,
@@ -79,7 +80,7 @@ def main() -> None:
     log_pth = os.path.join(base_pth, 'logs')
     log = create_log_file(args, log_pth)
     log['timestamp'] =  datetime.now().strftime("%Y-%m-%d-%H-%M")
-    
+
     print("Load model and data")
     model, preprocessing = get_model(args)
     model = model.eval()

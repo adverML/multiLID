@@ -5,6 +5,7 @@ It therefore has a slightly different interface.
 https://github.com/bethgelab/foolbox/blob/master/examples/spatial_attack_pytorch_resnet18.py
 """
 import os
+from datetime import datetime
 
 import foolbox as fb
 import torch
@@ -15,12 +16,11 @@ import torchvision.datasets as datasets
 import copy
 import numpy as np
 from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import roc_curve, auc, roc_auc_score
+from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+from sklearn.metrics import roc_curve, auc, roc_auc_score, f1_score
 from sklearn.metrics import accuracy_score, precision_score, recall_score
 from sklearn.preprocessing import scale, MinMaxScaler, StandardScaler
-from sklearn.preprocessing import scale
 import argparse
 
 import cfg
@@ -34,6 +34,9 @@ from misc import (
     create_log_file,
     save_log
 )
+
+import warnings 
+
 
 def compute_roc(y_true, y_pred, plot=False):
     """
@@ -115,7 +118,7 @@ def show_results(args, log, y_test, y_label_pred, y_pred):
 def main() -> None:
     parser = argparse.ArgumentParser("extract")
     parser.add_argument("--run_nr",  default="run_1", help="")
-    parser.add_argument("--att",        default="fgsm", choices=['fgsm', 'bim', 'pgd', 'df', 'cw'], help="")
+    parser.add_argument("--att",        default="fgsm", choices=['fgsm', 'bim', 'pgd', 'aa', 'df', 'cw'], help="")
     parser.add_argument("--defense",    default="multilid", choices=['multilid', 'lid'], help="")
     parser.add_argument("--dataset",    default="imagenet", choices=['imagenet', 'cifar10', 'cifar100'], help="")
     parser.add_argument("--model",      default="wrn50-2", choices=['wrn50-2', 'wrn28-10', 'vgg16'], help="")
@@ -148,7 +151,7 @@ def main() -> None:
     create_dir(base_pth_det)
     log_pth = os.path.join(base_pth_det, 'logs')
     log = create_log_file(args, log_pth)
-    log['timestamp'] =  datetime.now().strftime("%Y-%m-%d-%H-%M")
+    log['timestamp_start'] =  datetime.now().strftime("%Y-%m-%d-%H-%M")
 
     print("feature_method", args.defense, 'classifier', args.clf)
 
@@ -157,7 +160,7 @@ def main() -> None:
         adverlos_fe = adverlos_fe.reshape((adverlos_fe.shape[0], -1))
 
     num_samples = int(normalos_fe.shape[0] * args.tr_size)
-    print("num sapmpels: ", num_samples)
+    print("num training samples: ", num_samples)
     X_train_nor = normalos_fe[:num_samples]
     X_train_adv = adverlos_fe[:num_samples]
 
@@ -177,25 +180,27 @@ def main() -> None:
 
     if args.tuning == None:
         if args.clf == 'lr':
-            clf = LogisticRegression(max_iter=100, n_jobs=-1).fit(X_train, y_train)
+            clf = LogisticRegression(max_iter=100, random_state=args.random_state, n_jobs=-1).fit(X_train, y_train)
 
         elif args.clf == 'rf':
-            clf = RandomForestClassifier(n_estimators=300, n_jobs=-1).fit(X_train, y_train)
+            clf = RandomForestClassifier(n_estimators=300, random_state=args.random_state, n_jobs=-1).fit(X_train, y_train)
 
     elif args.tuning in ["randomsearch"]:
+        warnings.filterwarnings('ignore') 
         if args.clf == 'lr':
             random_grid = {
-                "max_iter": [100, 200, 400],
+                "max_iter": [100, 200, 400, 800,],
                 "C":np.logspace(-3,3,7),
-                "penalty":[None, "l1","l2", "elasticnet"], # l1 lasso l2 ridge
-                "dual": [False, True],
-                "solver": ["lbfgs", "liblinear", "newton-cg", "newton-cholesky", "sag", "saga"]
+                "penalty":["none", "l1","l2", "elasticnet"], # l1 lasso l2 ridge
+                # "dual": [False, True],
+                # "solver": ["lbfgs", "liblinear", "newton-cg", "newton-cholesky", "sag", "saga"]
+                "solver": ["lbfgs", "liblinear", "newton-cg"]
             }
 
+
+            # lr = LogisticRegression(random_state=args.random_state, n_jobs=-1)
             lr = LogisticRegression(random_state=args.random_state, n_jobs=-1)
             lr_random = RandomizedSearchCV(estimator=lr, param_distributions=random_grid, n_iter=100, cv=2, verbose=args.verbose, random_state=args.random_state, n_jobs=-1)
-
-            clf = LogisticRegressionCV(n_jobs=-1).fit(X_train, y_train)
 
             lr_random.fit(X_train, y_train)
             print('Random grid: ', random_grid, '\n')
@@ -233,15 +238,18 @@ def main() -> None:
             clf = RandomForestClassifier(n_estimators=300, n_jobs=-1).fit(X_train, y_train)
 
     elif args.tuning in ["gridsearch"]:
+        warnings.filterwarnings('ignore') 
         if args.clf == 'lr':
             random_grid = {
-                "max_iter": [100, 400, 800],
+                "max_iter": [100, 200, 400, 800,],
                 "C":np.logspace(-3,3,7),
-                "penalty":[None, "l1","l2", "elasticnet"], # l1 lasso l2 ridge
-                "dual": [False, True],
-                "solver": ["lbfgs", "liblinear", "newton-cg", "newton-cholesky", "sag", "saga"]
+                "penalty":["none", "l1","l2", "elasticnet"], # l1 lasso l2 ridge
+                # "dual": [False, True],
+                # "solver": ["lbfgs", "liblinear", "newton-cg", "newton-cholesky", "sag", "saga"]
+                "solver": ["lbfgs", "liblinear", "newton-cg"]
             }
 
+            # lr = LogisticRegression(random_state=args.random_state, n_jobs=-1)
             lr = LogisticRegression(random_state=args.random_state, n_jobs=-1)
             lr_random = GridSearchCV(estimator=lr, param_grid=random_grid, 
                                     #scoring=scoring, 
@@ -288,6 +296,7 @@ def main() -> None:
     log = show_results(args, log, y_test, y_label_pred, y_pred)
     
     print("save log")
+    log['timestamp_end'] =  datetime.now().strftime("%Y-%m-%d-%H-%M")
     save_log(args, log, log_pth)
 
 if __name__ == "__main__":
