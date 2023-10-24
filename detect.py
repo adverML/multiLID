@@ -14,7 +14,8 @@ from torch.utils.data import DataLoader
 import torchvision.datasets as datasets
 import copy
 import numpy as np
-from sklearn.linear_model import LogisticRegressionCV
+from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
+from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_curve, auc, roc_auc_score
 from sklearn.metrics import accuracy_score, precision_score, recall_score
@@ -77,11 +78,11 @@ def perf_measure(y_actual, y_hat):
 
 
 def show_results(args, log, y_test, y_label_pred, y_pred):
-    
+
     TP, FP, TN, FN = perf_measure(y_test, y_label_pred)
     
     TPR = TP / (TP + FN)
-    TNR = TN / (TN + FP) 
+    TNR = TN / (TN + FP)
     FNR = FN / (FN + TP)
 
     # auc = round(100*roc_auc_score(y_test, y_hat_pr), 2)
@@ -91,18 +92,17 @@ def show_results(args, log, y_test, y_label_pred, y_pred):
     RECALL = recall_score(y_test, y_label_pred)
     ACC = accuracy_score(y_test, y_label_pred)
 
-        
-    f1  = round(100*F1, 2)
-    pre = round(100*PRECISION, 2)
     acc = round(100*ACC, 2)
+    pre = round(100*PRECISION, 2)
+    f1  = round(100*F1, 2)
     tpr = round(100*TPR, 2)
     tnr = round(100*TNR, 2)
     fnr = round(100*FNR, 2)
 
-    log['F1'] = str(f1)
-    log['PREC'] = str(pre)
-    log['ACC']  = str(acc)
     log['AUC']  = str(auc)
+    log['ACC']  = str(acc)
+    log['PREC'] = str(pre)
+    log['F1']   = str(f1)
     log['TPR']  = str(tpr) # True positive rate/adversarial detetcion rate/recall/sensitivity is 
     log['TNR']  = str(tnr) # True negative rate/normal detetcion rate/selectivity is 
     log['FNR']  = str(fnr)
@@ -125,7 +125,10 @@ def main() -> None:
     parser.add_argument("--k",          default=30, help="")
     parser.add_argument("--nr_samples", default=2000, help="")
     parser.add_argument("--clf",        default='rf', choices=['rf', 'lr'], help="")
+    parser.add_argument("--tuning",    default=None, choices=[None, 'randomsearch', 'gridsearch'], help="")
     parser.add_argument("--tr_size",    default=0.72, help="")
+    parser.add_argument("--random_state", default=21, help="")
+    parser.add_argument("--verbose", default=0, help="")
 
     parser.add_argument('--save_json',  default="", help='Save settings to file in json format. Ignored in json file')
     parser.add_argument('--load_json',  default="", help='Load settings from file in json format. Command line options override values in file.')
@@ -147,12 +150,7 @@ def main() -> None:
     log = create_log_file(args, log_pth)
     log['timestamp'] =  datetime.now().strftime("%Y-%m-%d-%H-%M")
 
-
     print("feature_method", args.defense, 'classifier', args.clf)
-
-    # if isinstance(normalos_fe, np.ndarray):
-    #     normalos_fe = torch.from_numpy(normalos_fe)
-    #     adverlos_fe = torch.from_numpy(adverlos_fe)
 
     if len(normalos_fe.shape) > 2:
         normalos_fe = normalos_fe.reshape((normalos_fe.shape[0], -1))
@@ -169,22 +167,84 @@ def main() -> None:
     X_train = np.vstack((X_train_nor, X_train_adv))
     y_train = np.concatenate((np.zeros(X_train_nor.shape[0]), np.ones(X_train_adv.shape[0])), axis=0)
     X_test  = np.vstack((X_test_nor, X_test_adv))
-    y_test = np.concatenate((np.zeros(X_test_nor.shape[0]), np.ones(X_test_adv.shape[0])), axis=0)
+    y_test  = np.concatenate((np.zeros(X_test_nor.shape[0]), np.ones(X_test_adv.shape[0])), axis=0)
 
-    if args.clf == 'lr':
-        scaler = MinMaxScaler().fit(X_train)
-        X_train = scaler.transform(X_train)
-        clf = LogisticRegressionCV(n_jobs=-1).fit(X_train, y_train)
-        X_test = scaler.transform(X_test)
 
-    elif args.clf == 'rf':
-         clf = RandomForestClassifier(n_estimators=300, n_jobs=-1).fit(X_train, y_train)
+    if args.tuning == None:
+        if args.clf == 'lr':
+            scaler = MinMaxScaler().fit(X_train)
+            X_train = scaler.transform(X_train)
+            clf = LogisticRegression(max_iter=100, n_jobs=-1).fit(X_train, y_train)
+            X_test = scaler.transform(X_test)
+
+        elif args.clf == 'rf':
+            clf = RandomForestClassifier(n_estimators=300, n_jobs=-1).fit(X_train, y_train)
+
+    elif args.tuning in ["randomsearch"]:
+        if args.clf == 'lr':
+            random_grid = {
+                "max_iter": [100, 200, 400],
+                "C":np.logspace(-3,3,7),
+                "penalty":[None, "l1","l2", "elasticnet"], # l1 lasso l2 ridge
+                "dual": [False, True],
+                "solver": ["lbfgs", "liblinear", "newton-cg", "newton-cholesky", "sag", "saga"]
+            }
+
+            lr = LogisticRegression(random_state=args.random_state, n_jobs=-1)
+            lr_random = RandomizedSearchCV(estimator=lr, param_distributions=random_grid, n_iter=100, cv=3, verbose=args.verbose, random_state=args.random_state, n_jobs=-1)
+            
+            scaler = MinMaxScaler().fit(X_train)
+            X_train = scaler.transform(X_train)
+            X_test = scaler.transform(X_test)
+
+            clf = LogisticRegressionCV(n_jobs=-1).fit(X_train, y_train)
+
+            lr_random.fit(X_train, y_train)
+            print('Random grid: ', random_grid, '\n')
+            
+            # print the best parameters
+            print('Best Parameters: ', lr_random.best_params_ , ' \n')
+            clf = LogisticRegression(**lr_random.best_params_, random_state=args.random_state, n_jobs=-1)
+            clf.fit(X_train, y_train)
+
+        elif args.clf == 'rf':
+            clf = RandomForestClassifier(n_estimators=300, n_jobs=-1).fit(X_train, y_train)
+
+    elif args.tuning in ["gridsearch"]:
+        if args.clf == 'lr':
+            random_grid = {
+                "max_iter": [100, 400, 800],
+                "C":np.logspace(-3,3,7),
+                "penalty":[None, "l1","l2", "elasticnet"], # l1 lasso l2 ridge
+                "dual": [False, True],
+                "solver": ["lbfgs", "liblinear", "newton-cg", "newton-cholesky", "sag", "saga"]
+            }
+ 
+
+            lr = LogisticRegression(random_state=args.random_state, n_jobs=-1)
+            lr_random = GridSearchCV(estimator=lr, param_grid=random_grid, 
+                                    #scoring=scoring, 
+                                    refit="AUC", cv=3, verbose=args.verbose, n_jobs=-1)
+
+            lr_random.fit(X_train, y_train)
+
+            print('Random grid: ', random_grid, '\n')
+        
+            # print the best parameters
+            print('Best Parameters: ', lr_random.best_params_ , ' \n')
+            clf = LogisticRegression(**lr_random.best_params_, random_state=args.random_state, n_jobs=-1)
+            clf.fit(X_train, y_train)
+
+        elif args.clf == 'rf':
+            clf = RandomForestClassifier(n_estimators=300, n_jobs=-1).fit(X_train, y_train)
+
 
     y_label_pred = clf.predict(X_test)
     y_pred = clf.predict_proba(X_test)[:, 1]
 
     log = show_results(args, log, y_test, y_label_pred, y_pred)
-
+    
+    print("save log")
     save_log(args, log, log_pth)
 
 if __name__ == "__main__":
