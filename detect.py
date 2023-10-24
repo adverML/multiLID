@@ -170,12 +170,14 @@ def main() -> None:
     y_test  = np.concatenate((np.zeros(X_test_nor.shape[0]), np.ones(X_test_adv.shape[0])), axis=0)
 
 
+    if args.clf == 'lr':
+        scaler = MinMaxScaler().fit(X_train)
+        X_train = scaler.transform(X_train)
+        X_test = scaler.transform(X_test)
+
     if args.tuning == None:
         if args.clf == 'lr':
-            scaler = MinMaxScaler().fit(X_train)
-            X_train = scaler.transform(X_train)
             clf = LogisticRegression(max_iter=100, n_jobs=-1).fit(X_train, y_train)
-            X_test = scaler.transform(X_test)
 
         elif args.clf == 'rf':
             clf = RandomForestClassifier(n_estimators=300, n_jobs=-1).fit(X_train, y_train)
@@ -191,11 +193,7 @@ def main() -> None:
             }
 
             lr = LogisticRegression(random_state=args.random_state, n_jobs=-1)
-            lr_random = RandomizedSearchCV(estimator=lr, param_distributions=random_grid, n_iter=100, cv=3, verbose=args.verbose, random_state=args.random_state, n_jobs=-1)
-            
-            scaler = MinMaxScaler().fit(X_train)
-            X_train = scaler.transform(X_train)
-            X_test = scaler.transform(X_test)
+            lr_random = RandomizedSearchCV(estimator=lr, param_distributions=random_grid, n_iter=100, cv=2, verbose=args.verbose, random_state=args.random_state, n_jobs=-1)
 
             clf = LogisticRegressionCV(n_jobs=-1).fit(X_train, y_train)
 
@@ -208,6 +206,30 @@ def main() -> None:
             clf.fit(X_train, y_train)
 
         elif args.clf == 'rf':
+            random_grid = {
+                'n_estimators': [50,100, 300, 500, 800], # number of trees in the random forest
+                'max_features': ['auto', 'sqrt', 'log2'], # number of features in consideration at every split
+                'max_depth': [int(x) for x in np.linspace(10, 120, num = 12)], # maximum number of levels allowed in each decision tree,
+                'min_samples_split': [2, 6, 10], # minimum sample number to split a node
+                'min_samples_leaf':  [1, 3, 4],  # minimum sample number that can be stored in a leaf node
+                'bootstrap': [True, False],
+                #'criterion' : ['gini', 'entropy'],
+            }
+    
+            scoring = {"AUC": "roc_auc", "Accuracy": make_scorer(accuracy_score)} # https://scikit-learn.org/stable/auto_examples/model_selection/plot_multi_metric_evaluation.html
+
+            rf = RandomForestRegressor(random_state=args.random_state,  n_jobs=-1)
+            rf_random = RandomizedSearchCV(estimator=rf, param_distributions=random_grid, n_iter=100, cv=2, verbose=args.verbose, random_state=args.random_state, n_jobs=-1)
+            # https://scikit-learn.org/stable/auto_examples/model_selection/plot_multi_metric_evaluation.html#sphx-glr-auto-examples-model-selection-plot-multi-metric-evaluation-py
+            
+            rf_random.fit(X_train, y_train)
+            print('Random grid: ', random_grid, '\n')
+            
+            # print the best parameters
+            print('Best Parameters: ', rf_random.best_params_ , ' \n')
+            clf = RandomForestClassifier(**rf_random.best_params_, random_state=args.random_state, n_jobs=-1)
+            clf.fit(X_train, y_train)
+
             clf = RandomForestClassifier(n_estimators=300, n_jobs=-1).fit(X_train, y_train)
 
     elif args.tuning in ["gridsearch"]:
@@ -219,12 +241,11 @@ def main() -> None:
                 "dual": [False, True],
                 "solver": ["lbfgs", "liblinear", "newton-cg", "newton-cholesky", "sag", "saga"]
             }
- 
 
             lr = LogisticRegression(random_state=args.random_state, n_jobs=-1)
             lr_random = GridSearchCV(estimator=lr, param_grid=random_grid, 
                                     #scoring=scoring, 
-                                    refit="AUC", cv=3, verbose=args.verbose, n_jobs=-1)
+                                    refit=True, cv=2, verbose=args.verbose, n_jobs=-1)
 
             lr_random.fit(X_train, y_train)
 
@@ -236,8 +257,30 @@ def main() -> None:
             clf.fit(X_train, y_train)
 
         elif args.clf == 'rf':
-            clf = RandomForestClassifier(n_estimators=300, n_jobs=-1).fit(X_train, y_train)
+            random_grid = {
+                'n_estimators': [50,100, 300, 500, 800], # number of trees in the random forest
+                'max_features': ['auto', 'sqrt', 'log2'], # number of features in consideration at every split
+                'max_depth': [int(x) for x in np.linspace(10, 120, num=12)], # maximum number of levels allowed in each decision tree,
+                'min_samples_split': [2, 6, 10], # minimum sample number to split a node
+                'min_samples_leaf':  [1, 3, 4],  # minimum sample number that can be stored in a leaf node
+                'bootstrap': [True, False],
+                #'criterion' : ['gini', 'entropy'],
+            }
 
+            # scoring = {"AUC": "roc_auc", "Accuracy": make_scorer(accuracy_score)}
+            rf = RandomForestRegressor(random_state=args.random_state, n_jobs=-1)
+            rf_random = GridSearchCV(estimator=rf, param_grid=random_grid, 
+                                    #scoring=scoring, 
+                                    refit=True, cv=2, verbose=args.verbose, n_jobs=-1)
+
+            rf_random.fit(X_train, y_train)
+            print ('Random grid: ', random_grid, '\n')
+            
+            # print the best parameters
+            print ('Best Parameters: ', rf_random.best_params_ , '\n')
+
+            clf = RandomForestClassifier(**rf_random.best_params_, random_state=args.random_state, n_jobs=-1)
+            clf.fit(X_train, y_train)
 
     y_label_pred = clf.predict(X_test)
     y_pred = clf.predict_proba(X_test)[:, 1]
