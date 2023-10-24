@@ -19,7 +19,7 @@ import copy
 import argparse
 from tqdm import tqdm
 import cfg
-
+from datetime import datetime
 
 from misc import (
     args_handling,
@@ -78,7 +78,8 @@ def main() -> None:
     create_dir(base_pth)
     log_pth = os.path.join(base_pth, 'logs')
     log = create_log_file(args, log_pth)
-
+    log['timestamp'] =  datetime.now().strftime("%Y-%m-%d-%H-%M")
+    
     print("Load model and data")
     model, preprocessing = get_model(args)
     model = model.eval()
@@ -214,7 +215,8 @@ def main() -> None:
 
     asr = np.mean(total_success)
     print(args.att, f", counter {counter}", normalos.shape, asr)
-
+    
+    
     log['final_nr_samples'] = counter
     log['asr'] = round(asr,4)
     log['clean_acc'] = 0 if len(clean_acc_list) == None else round(np.mean(clean_acc_list), 4)

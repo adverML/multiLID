@@ -30,12 +30,13 @@ from misc import (
     save_to_pt,
     convert_to_float,
     create_dir,
-    create_log_file
+    create_log_file,
+    save_log
 )
 
 def compute_roc(y_true, y_pred, plot=False):
     """
-    TODO
+    TODO 
     :param y_true: ground truth
     :param y_pred: predictions
     :param plot:
@@ -54,6 +55,61 @@ def compute_roc(y_true, y_pred, plot=False):
         plt.show()
 
     return fpr, tpr, auc_score
+
+
+def perf_measure(y_actual, y_hat):
+    """
+    https://shouland.com/false-positive-rate-test-sklearn-code-example
+    """
+    TP = 0; FP = 0; TN = 0; FN = 0
+
+    for i in range(len(y_hat)): 
+        if y_actual[i]==y_hat[i]==1:
+           TP += 1
+        if y_hat[i]==1 and y_actual[i]!=y_hat[i]:
+           FP += 1
+        if y_actual[i]==y_hat[i]==0:
+           TN += 1
+        if y_hat[i]==0 and y_actual[i]!=y_hat[i]:
+           FN += 1
+
+    return (TP, FP, TN, FN)
+
+
+def show_results(args, log, y_test, y_label_pred, y_pred):
+    
+    TP, FP, TN, FN = perf_measure(y_test, y_label_pred)
+    
+    TPR = TP / (TP + FN)
+    TNR = TN / (TN + FP) 
+    FNR = FN / (FN + TP)
+
+    # auc = round(100*roc_auc_score(y_test, y_hat_pr), 2)
+    _, _, auc = compute_roc(y_test, y_pred, plot=False)
+    PRECISION = precision_score(y_test, y_label_pred)
+    F1 = f1_score(y_test, y_label_pred)
+    RECALL = recall_score(y_test, y_label_pred)
+    ACC = accuracy_score(y_test, y_label_pred)
+
+        
+    f1  = round(100*F1, 2)
+    pre = round(100*PRECISION, 2)
+    acc = round(100*ACC, 2)
+    tpr = round(100*TPR, 2)
+    tnr = round(100*TNR, 2)
+    fnr = round(100*FNR, 2)
+
+    log['F1'] = str(f1)
+    log['PREC'] = str(pre)
+    log['ACC']  = str(acc)
+    log['AUC']  = str(auc)
+    log['TPR']  = str(tpr) # True positive rate/adversarial detetcion rate/recall/sensitivity is 
+    log['TNR']  = str(tnr) # True negative rate/normal detetcion rate/selectivity is 
+    log['FNR']  = str(fnr)
+
+    print(f"{args.defense}, {args.clf}, {args.dataset}, auc: {auc}, acc: {acc}, pre: {pre}, f1: {f1}, tpr: {tpr}, tnr: {tnr}, fnr: {fnr}")
+
+    return log
 
 
 def main() -> None:
@@ -83,7 +139,14 @@ def main() -> None:
     normalos_fe = torch.load(os.path.join(base_pth, args.load_nor)).numpy()
     adverlos_fe = torch.load(os.path.join(base_pth, args.load_adv)).numpy()
 
-    # log = create_log_file(args)
+    print("Create paths!")
+    base_pth = os.path.join(cfg.workspace, 'data/extract', args.run_nr, args.dataset, args.model, args.defense, args.att, 'k'+str(args.k))
+    base_pth_det = os.path.join(cfg.workspace, 'data/detect', args.run_nr, args.dataset, args.model, args.att, args.clf)
+    create_dir(base_pth_det)
+    log_pth = os.path.join(base_pth_det, 'logs')
+    log = create_log_file(args, log_pth)
+    log['timestamp'] =  datetime.now().strftime("%Y-%m-%d-%H-%M")
+
 
     print("feature_method", args.defense, 'classifier', args.clf)
 
@@ -117,22 +180,12 @@ def main() -> None:
     elif args.clf == 'rf':
          clf = RandomForestClassifier(n_estimators=300, n_jobs=-1).fit(X_train, y_train)
 
-    y_pred = clf.predict_proba(X_test)[:, 1]
     y_label_pred = clf.predict(X_test)
+    y_pred = clf.predict_proba(X_test)[:, 1]
 
-    # AUC
-    _, _, auc_score = compute_roc(y_test, y_pred, plot=False)
-    precision = precision_score(y_test, y_label_pred)
-    recall = recall_score(y_test, y_label_pred)
-    acc = accuracy_score(y_test, y_label_pred)
+    log = show_results(args, log, y_test, y_label_pred, y_pred)
 
-    print("auc_score: ", auc_score, "acc: ", acc)
-
-
-    # log["auc_score"] = auc_score
-    # log["acc"] = acc
-
-    # save_log(args, log, load_cfg)
+    save_log(args, log, log_pth)
 
 if __name__ == "__main__":
     main()
