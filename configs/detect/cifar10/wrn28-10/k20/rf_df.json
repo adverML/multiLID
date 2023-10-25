@@ -1,0 +1,18 @@
+{
+    "run_nr": "run_1",
+    "att": "df",
+    "defense": "multilid",
+    "dataset": "cifar10",
+    "model": "wrn28-10",
+    "load_nor": "multilid_normalos.pt",
+    "load_adv": "multilid_adverlos.pt",
+    "eps": "8/255",
+    "k": 20,
+    "nr_samples": 2000,
+    "clf": "rf",
+    "tuning": null,
+    "tr_size": 0.72,
+    "random_state": 21,
+    "verbose": 0,
+    "load_json": "configs/detect/"
+}

@@ -89,12 +89,13 @@ def show_results(args, log, y_test, y_label_pred, y_pred):
     FNR = FN / (FN + TP)
 
     # auc = round(100*roc_auc_score(y_test, y_hat_pr), 2)
-    _, _, auc = compute_roc(y_test, y_pred, plot=False)
+    _, _, AUC = compute_roc(y_test, y_pred, plot=False)
     PRECISION = precision_score(y_test, y_label_pred)
     F1 = f1_score(y_test, y_label_pred)
     RECALL = recall_score(y_test, y_label_pred)
     ACC = accuracy_score(y_test, y_label_pred)
 
+    auc = round(100*AUC, 2)
     acc = round(100*ACC, 2)
     pre = round(100*PRECISION, 2)
     f1  = round(100*F1, 2)
@@ -110,7 +111,7 @@ def show_results(args, log, y_test, y_label_pred, y_pred):
     log['TNR']  = str(tnr) # True negative rate/normal detetcion rate/selectivity is 
     log['FNR']  = str(fnr)
 
-    print(f"{args.defense}, {args.clf}, {args.dataset}, auc: {auc}, acc: {acc}, pre: {pre}, f1: {f1}, tpr: {tpr}, tnr: {tnr}, fnr: {fnr}")
+    print(f"{args.clf}, {args.defense}, {args.clf}, {args.dataset}, auc: {auc}, f1: {f1}, acc: {acc}, pre: {pre}, tpr: {tpr}, fnr: {fnr}, tnr: {tnr}")
 
     return log
 
@@ -221,7 +222,7 @@ def main() -> None:
                 #'criterion' : ['gini', 'entropy'],
             }
     
-            scoring = {"AUC": "roc_auc", "Accuracy": make_scorer(accuracy_score)} # https://scikit-learn.org/stable/auto_examples/model_selection/plot_multi_metric_evaluation.html
+            # scoring = {"AUC": "roc_auc", "Accuracy": make_scorer(accuracy_score)} # https://scikit-learn.org/stable/auto_examples/model_selection/plot_multi_metric_evaluation.html
 
             rf = RandomForestRegressor(random_state=args.random_state,  n_jobs=-1)
             rf_random = RandomizedSearchCV(estimator=rf, param_distributions=random_grid, n_iter=100, cv=2, verbose=args.verbose, random_state=args.random_state, n_jobs=-1)

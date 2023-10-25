@@ -85,6 +85,11 @@ def save_log(args, log_dict, save_dir):
 
     save_dir_file = os.path.join(save_dir, args.load_json.split('/')[-1].replace("json", "txt"))
 
+    if hasattr(args, "tuning") and args.tuning is not None:
+        save_dir_file = save_dir_file.replace(".txt", args.tuning + ".txt")
+
+            
+
     with open(save_dir_file , "w") as write_file:
         try:
             json.dump(log_dict, write_file, indent=4)
