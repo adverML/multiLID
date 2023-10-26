@@ -137,7 +137,7 @@ def str2bool(v):
 def get_preprocessing(args):
 
     if args.dataset == 'cifar10':
-        preprocessing = dict(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010], axis=-3)
+        preprocessing = dict(mean=[0.4914, 0.4822, 0.4465], std=[0.247,  0.2435, 0.2616], axis=-3)
     elif args.dataset == 'cifar100':
         preprocessing = dict(mean=[0.5071, 0.4867, 0.4408], std=[0.2675, 0.2565, 0.2761], axis=-3)
     elif args.dataset == 'imagenet':
