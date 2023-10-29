@@ -1,0 +1,14 @@
+{
+    "run_nr": "run_1",
+    "att": "bim",
+    "dataset": "cifar10",
+    "model": "wrn28-10",
+    "bs": 256,
+    "save_nor": "normalos_8255_testset.pt",
+    "save_adv": "adverlos_8255_testset.pt",
+    "eps": "8/255",
+    "max_counter": 10000,
+    "debug": true,
+    "load_json": "",
+    "save_json": ""
+}

@@ -1,0 +1,14 @@
+{
+    "run_nr": "run_1",
+    "att": "cw",
+    "dataset": "cifar10",
+    "model": "wrn28-10",
+    "bs": 128,
+    "save_nor": "normalos_testset.pt",
+    "save_adv": "adverlos_testset.pt",
+    "eps": null,
+    "max_counter": 10000,
+    "debug": true,
+    "load_json": "",
+    "save_json": ""
+}

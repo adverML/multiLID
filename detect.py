@@ -80,7 +80,7 @@ def perf_measure(y_actual, y_hat):
     return (TP, FP, TN, FN)
 
 
-def show_results(args, log, y_test, y_label_pred, y_pred):
+def show_results(args, log, y_test, y_label_pred, y_pred, test=""):
 
     TP, FP, TN, FN = perf_measure(y_test, y_label_pred)
     
@@ -103,15 +103,15 @@ def show_results(args, log, y_test, y_label_pred, y_pred):
     tnr = round(100*TNR, 2)
     fnr = round(100*FNR, 2)
 
-    log['AUC']  = str(auc)
-    log['ACC']  = str(acc)
-    log['PREC'] = str(pre)
-    log['F1']   = str(f1)
-    log['TPR']  = str(tpr) # True positive rate/adversarial detetcion rate/recall/sensitivity is 
-    log['TNR']  = str(tnr) # True negative rate/normal detetcion rate/selectivity is 
-    log['FNR']  = str(fnr)
+    log[test + 'AUC']  = str(auc)
+    log[test + 'ACC']  = str(acc)
+    log[test + 'PREC'] = str(pre)
+    log[test + 'F1']   = str(f1)
+    log[test + 'TPR']  = str(tpr) # True positive rate/adversarial detetcion rate/recall/sensitivity is 
+    log[test + 'TNR']  = str(tnr) # True negative rate/normal detetcion rate/selectivity is 
+    log[test + 'FNR']  = str(fnr)
 
-    print(f"{args.clf}, {args.defense}, {args.clf}, {args.dataset}, auc: {auc}, f1: {f1}, acc: {acc}, pre: {pre}, tpr: {tpr}, fnr: {fnr}, tnr: {tnr}")
+    print(f"{test}, {args.clf}, {args.defense}, {args.clf}, {args.dataset}, auc: {auc}, f1: {f1}, acc: {acc}, pre: {pre}, tpr: {tpr}, fnr: {fnr}, tnr: {tnr}")
 
     return log
 
@@ -295,7 +295,11 @@ def main() -> None:
     y_pred = clf.predict_proba(X_test)[:, 1]
 
     log = show_results(args, log, y_test, y_label_pred, y_pred)
-    
+
+    y_label_pred = clf.predict(X_train)
+    y_pred = clf.predict_proba(X_train)[:, 1]
+    log = show_results(args, log, y_train, y_label_pred, y_pred, test='tr_')
+
     print("save log")
     log['timestamp_end'] =  datetime.now().strftime("%Y-%m-%d-%H-%M")
     save_log(args, log, log_pth)
