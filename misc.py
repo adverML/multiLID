@@ -83,7 +83,7 @@ def save_log(args, log_dict, save_dir):
     print("save log ...", save_dir)
     print(log_dict)
 
-    save_dir_file = os.path.join(save_dir, args.load_json.split('/')[-1].replace("json", "txt"))
+    save_dir_file = os.path.join(save_dir, log_dict['timestamp_start'] + '_' + args.load_json.split('/')[-1].replace("json", "txt"))
 
     if hasattr(args, "tuning") and args.tuning is not None:
         save_dir_file = save_dir_file.replace(".txt", args.tuning + ".txt")

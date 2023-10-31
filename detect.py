@@ -212,12 +212,30 @@ def main() -> None:
             clf.fit(X_train, y_train)
 
         elif args.clf == 'rf':
+            # random_grid = {
+            #     'n_estimators': [50, 100, 300, 500, 800], # number of trees in the random forest
+            #     'max_features': ['auto', 'sqrt', 'log2'], # number of features in consideration at every split
+            #     'max_depth': [int(x) for x in np.linspace(10, 120, num = 12)], # maximum number of levels allowed in each decision tree,
+            #     'min_samples_split': [2, 6, 10], # minimum sample number to split a node
+            #     'min_samples_leaf':  [1, 3,  4], # minimum sample number that can be stored in a leaf node
+            #     'bootstrap': [True, False],
+            #     #'criterion' : ['gini', 'entropy'],
+            # }
+            # random_grid = {
+            #     'n_estimators': [5, 10, 20, 30, 40, 50], # number of trees in the random forest
+            #     'max_features': ['auto', 'sqrt', 'log2'], # number of features in consideration at every split
+            #     'max_depth': [int(x) for x in np.linspace(10, 120, num = 12)], # maximum number of levels allowed in each decision tree,
+            #     'min_samples_split': [2, 6, 10], # minimum sample number to split a node
+            #     'min_samples_leaf':  [1, 3,  4], # minimum sample number that can be stored in a leaf node
+            #     'bootstrap': [True, False],
+            #     #'criterion' : ['gini', 'entropy'],
+            # }
             random_grid = {
-                'n_estimators': [50,100, 300, 500, 800], # number of trees in the random forest
+                'n_estimators': [5, 10, 100, 300, 500, 800], # number of trees in the random forest
                 'max_features': ['auto', 'sqrt', 'log2'], # number of features in consideration at every split
                 'max_depth': [int(x) for x in np.linspace(10, 120, num = 12)], # maximum number of levels allowed in each decision tree,
                 'min_samples_split': [2, 6, 10], # minimum sample number to split a node
-                'min_samples_leaf':  [1, 3, 4],  # minimum sample number that can be stored in a leaf node
+                'min_samples_leaf':  [1, 3,  4], # minimum sample number that can be stored in a leaf node
                 'bootstrap': [True, False],
                 #'criterion' : ['gini', 'entropy'],
             }
@@ -266,16 +284,34 @@ def main() -> None:
             clf.fit(X_train, y_train)
 
         elif args.clf == 'rf':
+            # random_grid = {
+            #     'n_estimators': [50,100, 300, 500, 800], # number of trees in the random forest
+            #     'max_features': ['auto', 'sqrt', 'log2'], # number of features in consideration at every split
+            #     'max_depth': [int(x) for x in np.linspace(10, 120, num=12)], # maximum number of levels allowed in each decision tree,
+            #     'min_samples_split': [2, 6, 10], # minimum sample number to split a node
+            
+            #     'min_samples_leaf':  [1, 3, 4],  # minimum sample number that can be stored in a leaf node
+            #     'bootstrap': [True, False],
+            #     #'criterion' : ['gini', 'entropy'],
+            # }
+            # random_grid = {
+            #     'n_estimators': [5, 10, 20, 30, 40, 50], # number of trees in the random forest
+            #     'max_features': ['auto', 'sqrt', 'log2'], # number of features in consideration at every split
+            #     'max_depth': [int(x) for x in np.linspace(10, 120, num = 12)], # maximum number of levels allowed in each decision tree,
+            #     'min_samples_split': [2, 6, 10], # minimum sample number to split a node
+            #     'min_samples_leaf':  [1, 3,  4], # minimum sample number that can be stored in a leaf node
+            #     'bootstrap': [True, False],
+            #     #'criterion' : ['gini', 'entropy'],
+            # }
             random_grid = {
-                'n_estimators': [50,100, 300, 500, 800], # number of trees in the random forest
+                'n_estimators': [5, 10, 100, 300, 500, 800], # number of trees in the random forest
                 'max_features': ['auto', 'sqrt', 'log2'], # number of features in consideration at every split
-                'max_depth': [int(x) for x in np.linspace(10, 120, num=12)], # maximum number of levels allowed in each decision tree,
+                'max_depth': [int(x) for x in np.linspace(10, 120, num = 12)], # maximum number of levels allowed in each decision tree,
                 'min_samples_split': [2, 6, 10], # minimum sample number to split a node
-                'min_samples_leaf':  [1, 3, 4],  # minimum sample number that can be stored in a leaf node
+                'min_samples_leaf':  [1, 3,  4], # minimum sample number that can be stored in a leaf node
                 'bootstrap': [True, False],
                 #'criterion' : ['gini', 'entropy'],
             }
-
             # scoring = {"AUC": "roc_auc", "Accuracy": make_scorer(accuracy_score)}
             rf = RandomForestRegressor(random_state=args.random_state, n_jobs=-1)
             rf_random = GridSearchCV(estimator=rf, param_grid=random_grid, 
