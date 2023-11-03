@@ -132,6 +132,7 @@ def main() -> None:
         args.eps = None
     elif args.att in AUTOATTACK:
         from submodules.autoattack.autoattack import AutoAttack as AutoAttack_mod
+        # https://colab.research.google.com/drive/1uZrW3Sg-t5k6QVEwXDdjTSxWpiwPGPm2?usp=sharing#scrollTo=jYnKIzXAgV4W
         adversary = AutoAttack_mod(fmodel, norm=args.norm.capitalize(), eps=args.eps, 
                                     log_path=os.path.join(log_pth, args.load_json.split('/')[-1]).replace("json", "log"),  verbose=args.debug, version=args.version)
         if args.version == 'individual':
@@ -228,6 +229,6 @@ def main() -> None:
     torch.save(normalos, os.path.join(base_pth, args.save_nor))
     torch.save(adverlos, os.path.join(base_pth, args.save_adv))
 
- 
+
 if __name__ == "__main__":
     main()
