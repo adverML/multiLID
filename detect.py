@@ -22,7 +22,7 @@ from sklearn.metrics import roc_curve, auc, roc_auc_score, f1_score
 from sklearn.metrics import accuracy_score, precision_score, recall_score
 from sklearn.preprocessing import scale, MinMaxScaler, StandardScaler
 import argparse
-
+import ast
 import cfg
 
 from misc import (
@@ -129,7 +129,7 @@ def main() -> None:
     parser.add_argument("--k",          default=30, help="")
     parser.add_argument("--nr_samples", default=2000, help="")
     parser.add_argument("--clf",        default='rf', choices=['rf', 'lr'], help="")
-    parser.add_argument("--clf_kwargs", default={}, help="")
+    parser.add_argument("--clf_kwargs", default={}, type=ast.literal_eval, help="")
     parser.add_argument("--tuning",     default=None, choices=[None, 'randomsearch', 'gridsearch'], help="")
     parser.add_argument("--tr_size",    default=0.72, help="")
     parser.add_argument("--random_state", default=21, help="")
@@ -183,14 +183,12 @@ def main() -> None:
     if args.tuning == None:
         if args.clf == 'lr':
             if len(args.clf_kwargs) == 0:
-                clf_kwargs = {"n_iters": 100}
-            breakpoint()
+                clf_kwargs = {"max_iter": 100}
             clf = LogisticRegression(random_state=args.random_state, n_jobs=-1, **clf_kwargs).fit(X_train, y_train)
 
         elif args.clf == 'rf':
             if len(args.clf_kwargs) == 0:
                 clf_kwargs = {"n_estimators": 300}
-            breakpoint()
             clf = RandomForestClassifier(random_state=args.random_state, n_jobs=-1, **clf_kwargs).fit(X_train, y_train)
 
     elif args.tuning in ["randomsearch"]:
