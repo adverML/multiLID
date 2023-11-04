@@ -129,7 +129,8 @@ def main() -> None:
     parser.add_argument("--k",          default=30, help="")
     parser.add_argument("--nr_samples", default=2000, help="")
     parser.add_argument("--clf",        default='rf', choices=['rf', 'lr'], help="")
-    parser.add_argument("--tuning",    default=None, choices=[None, 'randomsearch', 'gridsearch'], help="")
+    parser.add_argument("--clf_kwargs", default={}, help="")
+    parser.add_argument("--tuning",     default=None, choices=[None, 'randomsearch', 'gridsearch'], help="")
     parser.add_argument("--tr_size",    default=0.72, help="")
     parser.add_argument("--random_state", default=21, help="")
     parser.add_argument("--verbose", default=0, help="")
@@ -173,18 +174,24 @@ def main() -> None:
     X_test  = np.vstack((X_test_nor, X_test_adv))
     y_test  = np.concatenate((np.zeros(X_test_nor.shape[0]), np.ones(X_test_adv.shape[0])), axis=0)
 
-
     if args.clf == 'lr':
         scaler = MinMaxScaler().fit(X_train)
         X_train = scaler.transform(X_train)
         X_test = scaler.transform(X_test)
 
+    clf_kwargs = args.clf_kwargs
     if args.tuning == None:
         if args.clf == 'lr':
-            clf = LogisticRegression(max_iter=100, random_state=args.random_state, n_jobs=-1).fit(X_train, y_train)
+            if len(args.clf_kwargs) == 0:
+                clf_kwargs = {"n_iters": 100}
+            breakpoint()
+            clf = LogisticRegression(random_state=args.random_state, n_jobs=-1, **clf_kwargs).fit(X_train, y_train)
 
         elif args.clf == 'rf':
-            clf = RandomForestClassifier(n_estimators=300, random_state=args.random_state, n_jobs=-1).fit(X_train, y_train)
+            if len(args.clf_kwargs) == 0:
+                clf_kwargs = {"n_estimators": 300}
+            breakpoint()
+            clf = RandomForestClassifier(random_state=args.random_state, n_jobs=-1, **clf_kwargs).fit(X_train, y_train)
 
     elif args.tuning in ["randomsearch"]:
         warnings.filterwarnings('ignore') 

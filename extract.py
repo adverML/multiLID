@@ -69,7 +69,7 @@ def main() -> None:
     base_pth_extr = os.path.join(cfg.workspace, 'data/extract', args.run_nr, args.dataset, args.model, args.defense, args.att, 'k'+str(args.k))
     log_pth = os.path.join(base_pth_extr, 'logs')
     log = create_log_file(args, log_pth)
-    log['timestamp'] =  datetime.now().strftime("%Y-%m-%d-%H-%M")
+    log['timestamp_start'] =  datetime.now().strftime("%Y-%m-%d-%H-%M")
 
     print("Load data")
     nor = torch.load(os.path.join(base_pth, args.load_nor))[:args.nr_samples]

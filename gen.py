@@ -79,7 +79,7 @@ def main() -> None:
     create_dir(base_pth)
     log_pth = os.path.join(base_pth, 'logs')
     log = create_log_file(args, log_pth)
-    log['timestamp'] =  datetime.now().strftime("%Y-%m-%d-%H-%M")
+    log['timestamp_start'] =  datetime.now().strftime("%Y-%m-%d-%H-%M")
 
     print("Load model and data")
     model, preprocessing = get_model(args)
@@ -166,7 +166,6 @@ def main() -> None:
     normalos = []
     adverlos = []
     for it, (img, lab) in tqdm(enumerate(data_loader), total=round((args.max_counter)/args.bs)):
-        
         img_cu, lab_cu = img.cuda(non_blocking=True), lab.cuda(non_blocking=True)
         clean_acc_list.append(accuracy(fmodel, img_cu, lab_cu) * 100)
         
@@ -223,12 +222,14 @@ def main() -> None:
     log['asr'] = round(asr,4)
     log['clean_acc'] = 0 if len(clean_acc_list) == None else round(np.mean(clean_acc_list), 4)
 
-    save_log(args, log, log_pth)
+    
 
     print("save path: ", os.path.join(base_pth, args.save_nor))
     torch.save(normalos, os.path.join(base_pth, args.save_nor))
     torch.save(adverlos, os.path.join(base_pth, args.save_adv))
 
+    save_log(args, log, log_pth)
 
+    
 if __name__ == "__main__":
     main()
